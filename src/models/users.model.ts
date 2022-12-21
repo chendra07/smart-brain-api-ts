@@ -1,7 +1,7 @@
 import { DataTypes } from "sequelize";
 import { z } from "zod";
 
-import { sequelizeCfg } from "../services/postgresDB";
+import { sequelizeCfg } from "./postgresDB";
 
 const UsersPgModel = sequelizeCfg.define(
   "users",

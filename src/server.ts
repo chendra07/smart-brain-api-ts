@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { app } from "./app";
 
-import { openConnection } from "./services/postgresDB";
+import { openConnection } from "./models/postgresDB";
 
 dotenv.config();
 const PORT = process.env.PORT || 8000;
