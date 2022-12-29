@@ -30,15 +30,15 @@ const zodAxiosConfig = z.object({
   }),
 });
 
-type AxiosSchema = any;
+type AxiosOutputSchema = unknown;
 
 type AxiosConfig = z.infer<typeof zodAxiosConfig>;
 
 function axiosPromise(axiosConfig: AxiosConfig) {
-  return new Promise<AxiosSchema | string>((resolve, reject) => {
+  return new Promise<AxiosOutputSchema | string>((resolve, reject) => {
     axios(axiosConfig)
       .then((resp: unknown) => {
-        return resolve(resp as AxiosSchema);
+        return resolve(resp as AxiosOutputSchema);
       })
       .catch((error) => {
         return reject(`(${axiosConfig.method.toUpperCase()}): ${error}`);

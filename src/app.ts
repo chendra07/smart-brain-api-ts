@@ -1,9 +1,11 @@
 import express from "express";
+import fileUpload from "express-fileupload";
 import cors from "cors";
 import morgan from "morgan";
 
-import { responses } from "./utils/responses";
+// import { responses } from "./utils/responses";
 import { indexRouter } from "./router";
+import { uploadCloudinary } from "./utils/cloudinaryFileUpload";
 
 export const app = express();
 
@@ -15,10 +17,8 @@ app.use(
 );
 
 app.use(morgan("combined")); //http request logger
+app.use(fileUpload());
 app.use(express.json());
-// app.get("/", (req, res) => {
-//   responses.res200(req, res, {
-//     test: "Hello World",
-//   });
-// });
+
+app.post("/test/upload", (req, res) => uploadCloudinary(req, res, "1234-test"));
 app.use(indexRouter);

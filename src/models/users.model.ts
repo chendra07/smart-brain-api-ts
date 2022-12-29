@@ -62,3 +62,18 @@ export async function getAllUsers(): Promise<UserModel[] | string> {
     return "Failed";
   }
 }
+
+export async function getOneUser(id: number): Promise<UserModel | string> {
+  try {
+    let allUser = (await UsersPgModel.findOne({
+      where: { id: id },
+      raw: true,
+    })) as unknown as UserModel;
+
+    return allUser;
+  } catch (error) {
+    console.log("DB Error: ", error);
+
+    return "Failed";
+  }
+}
