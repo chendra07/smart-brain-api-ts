@@ -6,31 +6,23 @@ import { sequelizeCfg } from "./postgresDB";
 const UsersTablePgModel = sequelizeCfg.define(
   "users",
   {
-    userid: {
+    historyid: {
       type: DataTypes.INTEGER,
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING(100),
+    imageUrl: {
+      type: DataTypes.TEXT,
       allowNull: false,
     },
-    email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    entries: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    joined: {
+    date: {
       type: DataTypes.TIME,
       allowNull: false,
     },
-    image: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
+    userid: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     isdeleted: {
       type: DataTypes.BOOLEAN,
@@ -57,7 +49,6 @@ export type UserTableModel = z.infer<typeof zodUserModel>;
 export async function getAllUsers(): Promise<UserTableModel[] | string> {
   try {
     let allUser = (await UsersTablePgModel.findAll({
-      where: { isdeleted: false },
       raw: true,
     })) as unknown as UserTableModel[];
 
@@ -71,12 +62,12 @@ export async function getAllUsers(): Promise<UserTableModel[] | string> {
 
 export async function getOneUser(id: number): Promise<UserTableModel | string> {
   try {
-    let user = (await UsersTablePgModel.findOne({
-      where: { id: id, isdeleted: false },
+    let allUser = (await UsersTablePgModel.findOne({
+      where: { id: id },
       raw: true,
     })) as unknown as UserTableModel;
 
-    return user;
+    return allUser;
   } catch (error) {
     console.log("DB Error: ", error);
 

@@ -8,5 +8,11 @@ export function checkCloudinaryFile(
   next: NextFunction
 ) {
   //checking extension, size
-  next();
+  if (false) {
+    next();
+  } else {
+    console.log("Hello!!!!!");
+
+    return responses.res500(req, res, null);
+  }
 }
