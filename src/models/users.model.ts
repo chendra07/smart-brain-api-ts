@@ -43,7 +43,6 @@ const UsersTablePgModel = sequelizeCfg.define(
 );
 
 export const zodUserModel = z.object({
-  userid: z.number(),
   name: z.string().max(100),
   email: z.string().max(100),
   entries: z.number(),
@@ -65,7 +64,7 @@ export async function getAllUsers(): Promise<UserTableModel[] | string> {
   } catch (error) {
     console.log("DB Error: ", error);
 
-    return "Failed";
+    return "Failed to find all users";
   }
 }
 
@@ -80,6 +79,19 @@ export async function getOneUser(id: number): Promise<UserTableModel | string> {
   } catch (error) {
     console.log("DB Error: ", error);
 
-    return "Failed";
+    return "Failed to find the user";
+  }
+}
+
+export async function createUser(
+  data: UserTableModel
+): Promise<UserTableModel | string> {
+  try {
+    let user = await UsersTablePgModel.create(data);
+    console.log("User: ", user);
+    return data;
+  } catch (error) {
+    console.log("DB Error: ", error);
+    return "Failed to create user";
   }
 }

@@ -31,7 +31,6 @@ const LoginTablePgModel = sequelizeCfg.define(
 );
 
 export const zodLoginModel = z.object({
-  userid: z.number(),
   email: z.string().max(100),
   hash: z.string().max(100),
   isdeleted: z.boolean(),
@@ -42,7 +41,7 @@ export type LoginTableModel = z.infer<typeof zodLoginModel>;
 export async function matchUserLoginData(
   email: string,
   password: string
-): Promise<LoginTableModel | string> {
+): Promise<boolean> {
   try {
     let loginUser = (await LoginTablePgModel.findOne({
       where: {
@@ -53,10 +52,26 @@ export async function matchUserLoginData(
     })) as unknown as LoginTableModel;
     console.log("[login user]: ", loginUser);
 
-    return loginUser;
+    //TODO: Match bcrypt with current requested Password
+
+    return false;
   } catch (error) {
     console.log("DB Error: ", error);
+    return false;
+  }
+}
 
-    return "Failed";
+export async function createLoginUser(
+  data: LoginTableModel
+): Promise<LoginTableModel | string> {
+  try {
+    const createdUser = await LoginTablePgModel.create(data);
+
+    console.log("createdUser: ", createdUser);
+
+    return data;
+  } catch (error) {
+    console.error("Error: ", error);
+    return "Failed to create login user";
   }
 }

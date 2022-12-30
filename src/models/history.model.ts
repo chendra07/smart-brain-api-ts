@@ -3,8 +3,8 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-const UsersTablePgModel = sequelizeCfg.define(
-  "users",
+const HistoryTablePgModel = sequelizeCfg.define(
+  "history",
   {
     historyid: {
       type: DataTypes.INTEGER,
@@ -34,43 +34,45 @@ const UsersTablePgModel = sequelizeCfg.define(
   }
 );
 
-export const zodUserModel = z.object({
+export const zodHistoryModel = z.object({
+  imageurl: z.string(),
+  date: z.date(),
   userid: z.number(),
-  name: z.string().max(100),
-  email: z.string().max(100),
-  entries: z.number(),
-  joined: z.date(),
-  Image: z.string().optional(),
   isdeleted: z.boolean(),
 });
 
-export type UserTableModel = z.infer<typeof zodUserModel>;
+export type HistoryTableModel = z.infer<typeof zodHistoryModel>;
 
-export async function getAllUsers(): Promise<UserTableModel[] | string> {
+export async function getUserHistory(
+  userid: number
+): Promise<HistoryTableModel[] | string> {
   try {
-    let allUser = (await UsersTablePgModel.findAll({
+    let userHistory = (await HistoryTablePgModel.findAll({
+      where: {
+        userid: userid,
+        isDeleted: false,
+      },
       raw: true,
-    })) as unknown as UserTableModel[];
+    })) as unknown as HistoryTableModel[];
 
-    return allUser;
+    return userHistory;
   } catch (error) {
     console.log("DB Error: ", error);
-
-    return "Failed";
+    return "Failed to get history";
   }
 }
 
-export async function getOneUser(id: number): Promise<UserTableModel | string> {
+export async function createHistory(
+  data: HistoryTableModel
+): Promise<HistoryTableModel | string> {
   try {
-    let allUser = (await UsersTablePgModel.findOne({
-      where: { id: id },
-      raw: true,
-    })) as unknown as UserTableModel;
+    const history = await HistoryTablePgModel.create(data);
+    console.log("user: ", history);
 
-    return allUser;
+    return data;
   } catch (error) {
     console.log("DB Error: ", error);
 
-    return "Failed";
+    return "Failed to create history";
   }
 }
