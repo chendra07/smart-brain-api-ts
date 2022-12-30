@@ -1,4 +1,5 @@
 import express from "express";
+import session from "express-session";
 import fileUpload from "express-fileupload";
 import cors from "cors";
 import morgan from "morgan";
@@ -17,6 +18,7 @@ app.use(
 );
 
 app.use(morgan("combined")); //http request logger
+app.use(session());
 app.use(fileUpload());
 app.use(express.json());
 

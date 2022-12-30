@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-const UsersTablePgModel = sequelizeCfg.define(
+export const UsersTablePgModel = sequelizeCfg.define(
   "users",
   {
     userid: {
@@ -42,7 +42,7 @@ const UsersTablePgModel = sequelizeCfg.define(
   }
 );
 
-export const zodUserModel = z.object({
+export const zodUserType = z.object({
   name: z.string().max(100),
   email: z.string().max(100),
   entries: z.number(),
@@ -51,47 +51,32 @@ export const zodUserModel = z.object({
   isdeleted: z.boolean(),
 });
 
-export type UserTableModel = z.infer<typeof zodUserModel>;
+export type UserTableType = z.infer<typeof zodUserType>;
 
-export async function getAllUsers(): Promise<UserTableModel[] | string> {
-  try {
-    let allUser = (await UsersTablePgModel.findAll({
-      where: { isdeleted: false },
-      raw: true,
-    })) as unknown as UserTableModel[];
-
-    return allUser;
-  } catch (error) {
-    console.log("DB Error: ", error);
-
-    return "Failed to find all users";
-  }
+export async function getAllUser() {
+  return await UsersTablePgModel.findAll({
+    raw: true,
+  })
+    .then((result: unknown) => {
+      return result as UserTableType[];
+    })
+    .catch((error) => {
+      throw new Error("[DB - usersTable]: " + error);
+    });
 }
 
-export async function getOneUser(id: number): Promise<UserTableModel | string> {
-  try {
-    let user = (await UsersTablePgModel.findOne({
-      where: { id: id, isdeleted: false },
-      raw: true,
-    })) as unknown as UserTableModel;
-
-    return user;
-  } catch (error) {
-    console.log("DB Error: ", error);
-
-    return "Failed to find the user";
-  }
+export async function getOneUser(userid: number) {
+  return await UsersTablePgModel.findOne({
+    where: { userid: userid },
+    raw: true,
+  })
+    .then((result: unknown) => {
+      return result as UserTableType;
+    })
+    .catch((error) => {
+      throw new Error("[DB - usersTable]: " + error);
+    });
 }
 
-export async function createUser(
-  data: UserTableModel
-): Promise<UserTableModel | string> {
-  try {
-    let user = await UsersTablePgModel.create(data);
-    console.log("User: ", user);
-    return data;
-  } catch (error) {
-    console.log("DB Error: ", error);
-    return "Failed to create user";
-  }
-}
+//rollback db if error occured inside sequelize function
+//const t = await sequelizeCfg.transaction();

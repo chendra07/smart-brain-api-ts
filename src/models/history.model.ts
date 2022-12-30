@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-const HistoryTablePgModel = sequelizeCfg.define(
+export const HistoryTablePgModel = sequelizeCfg.define(
   "history",
   {
     historyid: {
@@ -34,45 +34,11 @@ const HistoryTablePgModel = sequelizeCfg.define(
   }
 );
 
-export const zodHistoryModel = z.object({
+export const zodHistoryType = z.object({
   imageurl: z.string(),
   date: z.date(),
   userid: z.number(),
   isdeleted: z.boolean(),
 });
 
-export type HistoryTableModel = z.infer<typeof zodHistoryModel>;
-
-export async function getUserHistory(
-  userid: number
-): Promise<HistoryTableModel[] | string> {
-  try {
-    let userHistory = (await HistoryTablePgModel.findAll({
-      where: {
-        userid: userid,
-        isDeleted: false,
-      },
-      raw: true,
-    })) as unknown as HistoryTableModel[];
-
-    return userHistory;
-  } catch (error) {
-    console.log("DB Error: ", error);
-    return "Failed to get history";
-  }
-}
-
-export async function createHistory(
-  data: HistoryTableModel
-): Promise<HistoryTableModel | string> {
-  try {
-    const history = await HistoryTablePgModel.create(data);
-    console.log("user: ", history);
-
-    return data;
-  } catch (error) {
-    console.log("DB Error: ", error);
-
-    return "Failed to create history";
-  }
-}
+type HistoryTableType = z.infer<typeof zodHistoryType>;

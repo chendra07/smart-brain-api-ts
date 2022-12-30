@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 
 //OK
-function res200(req: Request, res: Response, body: any, message?: "String") {
+function res200(req: Request, res: Response, body: any, message?: string) {
   return res.status(200).json({
     message: message ?? "OK",
     statusCode: 200,
@@ -10,7 +10,7 @@ function res200(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Created
-function res201(req: Request, res: Response, body: any, message?: "String") {
+function res201(req: Request, res: Response, body: any, message?: string) {
   return res.status(201).json({
     message: message ?? "Created",
     statusCode: 201,
@@ -19,7 +19,7 @@ function res201(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Bad Request
-function res400(req: Request, res: Response, body: any, message?: "String") {
+function res400(req: Request, res: Response, body: any, message?: string) {
   return res.status(400).json({
     message: message ?? "Bad Request",
     statusCode: 400,
@@ -28,7 +28,7 @@ function res400(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Unauthorized
-function res401(req: Request, res: Response, body: any, message?: "String") {
+function res401(req: Request, res: Response, body: any, message?: string) {
   return res.status(401).json({
     message: message ?? "Unauthorized",
     statusCode: 401,
@@ -37,7 +37,7 @@ function res401(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Forbidden
-function res403(req: Request, res: Response, body: any, message?: "String") {
+function res403(req: Request, res: Response, body: any, message?: string) {
   return res.status(403).json({
     message: message ?? "Forbidden",
     statusCode: 403,
@@ -46,7 +46,7 @@ function res403(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Not Found
-function res404(req: Request, res: Response, body: any, message?: "String") {
+function res404(req: Request, res: Response, body: any, message?: string) {
   return res.status(404).json({
     message: message ?? "Not Found",
     statusCode: 404,
@@ -55,7 +55,7 @@ function res404(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Method Not Allowed
-function res405(req: Request, res: Response, body: any, message?: "String") {
+function res405(req: Request, res: Response, body: any, message?: string) {
   return res.status(405).json({
     message: message ?? "Method Not Allowed",
     statusCode: 405,
@@ -64,7 +64,7 @@ function res405(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Request Timeout
-function res408(req: Request, res: Response, body: any, message?: "String") {
+function res408(req: Request, res: Response, body: any, message?: string) {
   return res.status(408).json({
     message: message ?? "Request Timeout",
     statusCode: 408,
@@ -73,7 +73,7 @@ function res408(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Conflict
-function res409(req: Request, res: Response, body: any, message?: "String") {
+function res409(req: Request, res: Response, body: any, message?: string) {
   return res.status(409).json({
     message: message ?? "Conflict",
     statusCode: 409,
@@ -82,7 +82,7 @@ function res409(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Too Many Request
-function res429(req: Request, res: Response, body: any, message?: "String") {
+function res429(req: Request, res: Response, body: any, message?: string) {
   return res.status(429).json({
     message: message ?? "Too Many Request",
     statusCode: 429,
@@ -91,7 +91,7 @@ function res429(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Internal Server Error
-function res500(req: Request, res: Response, body: any, message?: "String") {
+function res500(req: Request, res: Response, body: any, message?: string) {
   return res.status(500).json({
     message: message ?? "Internal Server Error",
     statusCode: 500,
@@ -100,7 +100,7 @@ function res500(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Bad Gateway
-function res502(req: Request, res: Response, body: any, message?: "String") {
+function res502(req: Request, res: Response, body: any, message?: string) {
   return res.status(502).json({
     message: message ?? "Bad Gateway",
     statusCode: 502,
@@ -109,7 +109,7 @@ function res502(req: Request, res: Response, body: any, message?: "String") {
 }
 
 //Network Authentication Required
-function res511(req: Request, res: Response, body: any, message?: "String") {
+function res511(req: Request, res: Response, body: any, message?: string) {
   return res.status(511).json({
     message: message ?? "Network Authentication Required",
     statusCode: 511,
