@@ -41,7 +41,7 @@ export const UsersTablePgModel = sequelizeCfg.define(
 export const zodUserType = z.object({
   userid: z.number(),
   name: z.string().max(100),
-  email: z.string().max(100),
+  email: z.string().max(100).email(),
   joined: z.date(),
   Image: z.string().optional(),
   isdeleted: z.boolean(),
@@ -72,6 +72,18 @@ export async function getOneUser(userid: number) {
     })
     .catch((error) => {
       throw new Error("[DB - usersTable]: " + error);
+    });
+}
+
+export async function postNewLoginUser(data: UserTableType) {
+  return await UsersTablePgModel.create(data)
+    .then((result: unknown) => {
+      console.log("CREATE: ", result);
+      return result;
+    })
+    .catch((error) => {
+      console.error("CREATE ERROR: ", error);
+      throw new Error("CREATE ERROR: " + error);
     });
 }
 

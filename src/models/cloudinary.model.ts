@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { UploadedFile } from "express-fileupload";
 import cloudinary from "cloudinary";
 
-import { responses } from "./responses";
-import { extensionExtractor } from "./extensionFunction";
+import { responses } from "../utils/responses";
+import { extensionExtractor } from "../utils/extensionFunction";
 
 const { CLD_NAME, CLD_API_KEY, CLD_API_SECRET } = process.env;
 
