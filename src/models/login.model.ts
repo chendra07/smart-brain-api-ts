@@ -31,9 +31,10 @@ export const LoginTablePgModel = sequelizeCfg.define(
 );
 
 export const zodLoginType = z.object({
-  email: z.string().max(100),
+  userid: z.number(),
+  email: z.string().max(100).email(),
   hash: z.string().max(100),
   isdeleted: z.boolean(),
 });
 
-export type LoginTableType = z.infer<typeof zodLoginType>;
+type LoginTableType = z.infer<typeof zodLoginType>;

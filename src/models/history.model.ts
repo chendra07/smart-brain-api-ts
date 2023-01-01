@@ -35,6 +35,7 @@ export const HistoryTablePgModel = sequelizeCfg.define(
 );
 
 export const zodHistoryType = z.object({
+  historyid: z.number(),
   imageurl: z.string(),
   date: z.date(),
   userid: z.number(),
@@ -42,3 +43,9 @@ export const zodHistoryType = z.object({
 });
 
 type HistoryTableType = z.infer<typeof zodHistoryType>;
+
+export async function userHistory(userid: number) {
+  HistoryTablePgModel.findAndCountAll({
+    where: { userid: userid, isdeleted: false },
+  });
+}

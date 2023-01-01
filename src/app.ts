@@ -18,9 +18,9 @@ app.use(
 );
 
 app.use(morgan("combined")); //http request logger
-app.use(session());
+// app.use(session());
 app.use(fileUpload());
 app.use(express.json());
 
-app.post("/test/upload", (req, res) => uploadCloudinary(req, res, "1234-test"));
+app.post("/test/upload", uploadCloudinary);
 app.use(indexRouter);

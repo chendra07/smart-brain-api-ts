@@ -20,10 +20,6 @@ export const UsersTablePgModel = sequelizeCfg.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
-    entries: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
     joined: {
       type: DataTypes.TIME,
       allowNull: false,
@@ -43,9 +39,9 @@ export const UsersTablePgModel = sequelizeCfg.define(
 );
 
 export const zodUserType = z.object({
+  userid: z.number(),
   name: z.string().max(100),
   email: z.string().max(100),
-  entries: z.number(),
   joined: z.date(),
   Image: z.string().optional(),
   isdeleted: z.boolean(),
@@ -55,6 +51,7 @@ export type UserTableType = z.infer<typeof zodUserType>;
 
 export async function getAllUser() {
   return await UsersTablePgModel.findAll({
+    where: { isdeleted: false },
     raw: true,
   })
     .then((result: unknown) => {
@@ -67,7 +64,7 @@ export async function getAllUser() {
 
 export async function getOneUser(userid: number) {
   return await UsersTablePgModel.findOne({
-    where: { userid: userid },
+    where: { userid: userid, isdeleted: false },
     raw: true,
   })
     .then((result: unknown) => {

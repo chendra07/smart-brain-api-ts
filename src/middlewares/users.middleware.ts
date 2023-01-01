@@ -9,7 +9,7 @@ const zodBodyGetOneUser = z.object({
 
 export type BodyGetOneUserType = z.infer<typeof zodBodyGetOneUser>;
 
-export function verifyRequest_GetOneUser(
+export function verifyBody_GetOneUser(
   req: Request,
   res: Response,
   next: NextFunction
@@ -17,6 +17,6 @@ export function verifyRequest_GetOneUser(
   if (zodBodyGetOneUser.safeParse(req.body).success) {
     next();
   } else {
-    responses.res500(req, res, null, "invalid request body!");
+    responses.res400(req, res, null, "invalid request");
   }
 }

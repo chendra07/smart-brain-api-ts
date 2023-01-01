@@ -15,12 +15,11 @@ export async function openConnection() {
   try {
     await sequelizeCfg.authenticate();
     console.log(
-      "[DB - Test Connection] Connection has been established successfully."
+      "[DB - Open Connection] Connection has been established successfully."
     );
   } catch (error) {
-    console.error(
-      "[DB - Test Connection] Unable to connect to the database:",
-      error
+    throw new Error(
+      "[DB - Open Connection] Unable to connect to the database: " + error
     );
   }
 }
@@ -32,9 +31,8 @@ export async function closeConnection() {
       "[DB - Close Connection] Connection has been closed successfully."
     );
   } catch (error) {
-    console.error(
-      "[DB - Close Connection] Unable to reach the database:",
-      error
+    throw new Error(
+      "[DB - Close Connection] Unable to close the database: " + error
     );
   }
 }
