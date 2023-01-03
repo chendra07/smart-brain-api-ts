@@ -41,78 +41,61 @@ export async function httpPostRegister(req: Request, res: Response) {
   let tempFileUrl: string | undefined;
   let tempFileName: string | undefined;
 
-  return (
-    //transaction used to rollback db if error occured inside sequelize function
-    sequelizeCfg
-      .transaction(async (t) => {
-        try {
-          //insert to user table
-          const userData = await createNewUser(name, email, t);
+  sequelizeCfg
+    .transaction(async (t) => {
+      //insert to user table
+      const userData = await createNewUser(name, email, t);
 
-          //generate token
-          const accessToken = signNewAccessToken({
-            email,
-          });
-          const refreshToken = signNewRefreshToken({
-            email,
-          });
+      //generate token
+      const accessToken = signNewAccessToken({
+        email,
+      });
+      const refreshToken = signNewRefreshToken({
+        email,
+      });
 
-          //insert to login table
-          await createNewLogin(
-            {
-              email: email,
-              hash: hashPassword(password),
-              userid: userData.userid!,
-              refresh_token: refreshToken,
-            },
-            t
-          );
+      //insert to login table
+      await createNewLogin(
+        {
+          email: email,
+          hash: hashPassword(password),
+          userid: userData.userid!,
+          refresh_token: refreshToken,
+        },
+        t
+      );
 
-          //if user send image when register, upload the image
-          if (image) {
-            const { userid, name } = userData;
-            const { fileName, url } = await uploadFileCloudinary(
-              image,
-              userid!,
-              name
-            );
-            tempFileUrl = url;
-            tempFileName = fileName;
-          }
-
-          //update image field
-          await updateUserData({ name: name, image: tempFileUrl }, email, t);
-
-          //return all result
-          return {
-            ...userData,
-            image: tempFileUrl,
-            accessToken,
-            refreshToken,
-          };
-        } catch (error) {
-          if (tempFileName) {
-            await deleteFileCloudinary(tempFileName);
-          }
-          throw new Error(`at [Register] => ${error}`); //initiate rollback
-        }
-      })
-      .then((finalResult) => {
-        const { userid, email, image, name, accessToken, refreshToken } =
-          finalResult;
-        return responses.res201(req, res, {
-          userid,
-          email,
+      //if user send image when register, upload the image
+      if (image) {
+        const { userid, name } = userData;
+        const { fileName, url } = await uploadFileCloudinary(
           image,
-          name,
-          accessToken,
-          refreshToken,
-        });
-      })
-      .catch((error) => {
+          userid!,
+          name
+        );
+        tempFileUrl = url;
+        tempFileName = fileName;
+      }
+
+      //update image field
+      await updateUserData({ name: name, image: tempFileUrl }, email, t);
+
+      return responses.res201(req, res, {
+        userid: userData.userid,
+        email: email,
+        image: image,
+        name: name,
+        accessToken,
+        refreshToken,
+      });
+    })
+    .catch(async (error) => {
+      if (tempFileName) {
+        //if registration failed and image has been uploaded, delete the file
+        await deleteFileCloudinary(tempFileName);
         return responses.res500(req, res, null, error.toString());
-      })
-  );
+      }
+    });
 }
 
 export async function httpPostLogin(req: Request, res: Response) {
