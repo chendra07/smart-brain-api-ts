@@ -27,6 +27,7 @@ export const HistoryTablePgModel = sequelizeCfg.define(
     isdeleted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: false,
     },
   },
   {
@@ -35,7 +36,7 @@ export const HistoryTablePgModel = sequelizeCfg.define(
 );
 
 export const zodHistoryType = z.object({
-  historyid: z.number(),
+  historyid: z.number().optional(),
   imageurl: z.string(),
   date: z.date(),
   userid: z.number(),

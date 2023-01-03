@@ -1,4 +1,4 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Transaction } from "sequelize";
 import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
@@ -17,7 +17,7 @@ export const UsersTablePgModel = sequelizeCfg.define(
       allowNull: false,
     },
     email: {
-      type: DataTypes.STRING(100),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     joined: {
@@ -31,6 +31,7 @@ export const UsersTablePgModel = sequelizeCfg.define(
     isdeleted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
+      defaultValue: false,
     },
   },
   {
@@ -39,28 +40,15 @@ export const UsersTablePgModel = sequelizeCfg.define(
 );
 
 export const zodUserType = z.object({
-  userid: z.number(),
+  userid: z.number().optional(),
   name: z.string().max(100),
   email: z.string().max(100).email(),
   joined: z.date(),
-  Image: z.string().optional(),
-  isdeleted: z.boolean(),
+  image: z.string().optional(),
+  isdeleted: z.boolean().optional(),
 });
 
 export type UserTableType = z.infer<typeof zodUserType>;
-
-export async function getAllUser() {
-  return await UsersTablePgModel.findAll({
-    where: { isdeleted: false },
-    raw: true,
-  })
-    .then((result: unknown) => {
-      return result as UserTableType[];
-    })
-    .catch((error) => {
-      throw new Error("[DB - usersTable]: " + error);
-    });
-}
 
 export async function getOneUser(userid: number) {
   return await UsersTablePgModel.findOne({
@@ -75,17 +63,50 @@ export async function getOneUser(userid: number) {
     });
 }
 
-export async function postNewLoginUser(data: UserTableType) {
-  return await UsersTablePgModel.create(data)
-    .then((result: unknown) => {
-      console.log("CREATE: ", result);
-      return result;
+export async function createNewUser(
+  name: string,
+  email: string,
+  t: Transaction | null
+) {
+  return await UsersTablePgModel.create(
+    {
+      name: name,
+      email: email,
+      joined: new Date(),
+    },
+    { transaction: t }
+  )
+    .then((data) => {
+      return data.dataValues as unknown as UserTableType;
     })
     .catch((error) => {
-      console.error("CREATE ERROR: ", error);
-      throw new Error("CREATE ERROR: " + error);
+      console.error(error);
+      throw new Error("[DB - Login]: unable to insert your data");
     });
 }
 
-//rollback db if error occured inside sequelize function
-//const t = await sequelizeCfg.transaction();
+type UpdateUserInput = {
+  image?: string | undefined;
+  isdeleted?: boolean | undefined;
+  name?: string;
+};
+
+export async function updateUserData(
+  data: UpdateUserInput,
+  email: string,
+  t: Transaction | null
+) {
+  return await UsersTablePgModel.update(data, {
+    where: { email },
+    transaction: t,
+  })
+    .then((result) => {
+      return true;
+    })
+    .catch((error) => {
+      console.error(error);
+      throw new Error(
+        "[DB - Users]: unable to update user data, try again later"
+      );
+    });
+}

@@ -9,7 +9,8 @@ export const sequelizeCfg = new Sequelize(DB_NAME!, DB_USER!, PASSWORD!, {
   host: DB_HOST!,
   port: parseInt(DB_PORT!),
   dialect: "postgres",
-}); // Example for postgres
+  omitNull: false, //false:able to commit null value
+});
 
 export async function openConnection() {
   try {
