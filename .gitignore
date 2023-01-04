@@ -2,7 +2,7 @@
 
 # dependencies
 /node_modules
-/dist
+/src
 /.pnp
 .pnp.js
 .env.production
