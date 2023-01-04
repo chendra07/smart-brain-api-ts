@@ -3,11 +3,11 @@ import { Sequelize, DataTypes } from "sequelize";
 
 dotenv.config();
 
-const { DB_NAME, DB_USER, PASSWORD, DB_HOST, DB_PORT } = process.env;
+const { DB_NAME, DB_USER, PASSWORD, DB_HOST, DB_PORT, DB_URL } = process.env;
 
-export const sequelizeCfg = new Sequelize(DB_NAME!, DB_USER!, PASSWORD!, {
-  host: DB_HOST!,
-  port: parseInt(DB_PORT!),
+export const sequelizeCfg = new Sequelize(DB_URL!, {
+  // host: DB_HOST!,
+  // port: parseInt(DB_PORT!),
   dialect: "postgres",
   omitNull: false, //false:able to commit null value
 });

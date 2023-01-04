@@ -87,7 +87,7 @@ export async function httpPostRegister(req: Request, res: Response) {
       return responses.res201(req, res, {
         userid: userData.userid,
         email: email,
-        image: image,
+        image: tempFileUrl,
         name: name,
         accessToken,
         refreshToken,
