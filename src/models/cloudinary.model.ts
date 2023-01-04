@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import { UploadedFile } from "express-fileupload";
 import cloudinary from "cloudinary";
 
-import { responses } from "./responses";
-import { extensionExtractor } from "./extensionFunction";
+import { responses } from "../utils/responses";
+import { extensionExtractor } from "../utils/extensionFunction";
 
 const { CLD_NAME, CLD_API_KEY, CLD_API_SECRET } = process.env;
 
@@ -15,17 +15,13 @@ cloudinaryV2.config({
   api_secret: CLD_API_SECRET!,
 });
 
-export async function uploadCloudinary(req: Request, res: Response) {
+export async function uploadFileCloudinary(
+  image: UploadedFile,
+  userId: number,
+  userName: string
+) {
   try {
-    console.log("message: ", req.body.message);
-
-    if (!req.files) {
-      throw new Error("No data uploaded!");
-    }
-
-    const { image } = req.files;
-    const userFile = image as UploadedFile;
-    const ext = extensionExtractor(userFile.name);
+    const ext = extensionExtractor(image.name);
 
     //get the extension & removing "." (dot) from regex result
     const dataImagePrefix = `data:image/${ext![ext!.length - 1].substring(
@@ -33,19 +29,33 @@ export async function uploadCloudinary(req: Request, res: Response) {
     )};base64,`;
 
     //convert image buffer to base64 string
-    const base64File = userFile.data.toString("base64");
+    const base64File = image.data.toString("base64");
 
     const uploadedResponse = await cloudinaryV2.uploader.upload(
       `${dataImagePrefix}${base64File}`,
       {
         upload_preset: "smart-brain-dev",
-        public_id: "1234-test",
+        public_id: `${userId}-${userName}`,
       }
     );
-    console.log("uploadedResponse: ", uploadedResponse);
-    responses;
+
+    return {
+      url: uploadedResponse.url,
+      fileName: `${userId}-${userName}`,
+    };
   } catch (error) {
     console.error(error);
-    responses.res500(req, res, null, "Failed to upload image");
+
+    throw new Error("[Cloudinary - Upload]: Failed to upload image");
+  }
+}
+
+export async function deleteFileCloudinary(fileName: string) {
+  try {
+    await cloudinaryV2.uploader.destroy(
+      "smart-brain-user-profiles/" + fileName
+    );
+  } catch (error) {
+    throw new Error("[Cloudinary]: Failed to delete file");
   }
 }

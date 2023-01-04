@@ -90,6 +90,15 @@ function res429(req: Request, res: Response, body: any, message?: string) {
   });
 }
 
+//Login Time-out
+function res440(req: Request, res: Response, body: any, message?: string) {
+  return res.status(440).json({
+    message: message ?? "Login Time-out",
+    statusCode: 440,
+    data: body,
+  });
+}
+
 //Internal Server Error
 function res500(req: Request, res: Response, body: any, message?: string) {
   return res.status(500).json({
@@ -128,6 +137,7 @@ export const responses = {
   res408,
   res409,
   res429,
+  res440,
   res500,
   res502,
   res511,

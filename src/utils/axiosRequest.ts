@@ -1,10 +1,17 @@
 import axios from "axios";
 import { z } from "zod";
 
-const renderHeaders = (uploadFile?: File) => {
-  return {
+const renderHeaders = (headerCfg?: object | null, uploadFile?: File | null) => {
+  let header;
+  header = {
     "Content-Type": uploadFile ? "multipart/form-data" : "application/json",
   };
+
+  if (headerCfg) {
+    header = { ...header, ...headerCfg };
+  }
+
+  return header;
 };
 
 //generate query based on given object
@@ -41,13 +48,19 @@ function axiosPromise(axiosConfig: AxiosConfig) {
         return resolve(resp as AxiosOutputSchema);
       })
       .catch((error) => {
+        console.error(error);
         return reject(`(${axiosConfig.method.toUpperCase()}): ${error}`);
       });
   });
 }
 
-async function Get(baseUrl: string | null, path: string, paramsObj?: object) {
-  const headers = renderHeaders();
+async function Get(
+  baseUrl: string | null,
+  path: string,
+  headerCfg: object,
+  paramsObj?: object
+) {
+  const headers = renderHeaders(headerCfg);
   let queryParams: string[] = [];
   if (paramsObj) {
     queryParams = generateQueryParams(paramsObj);
@@ -68,10 +81,11 @@ async function Post(
   baseUrl: string | null,
   path: string,
   sendData: object,
+  headerCfg?: object,
   paramsObj?: object,
   uploadFile?: File
 ) {
-  const headers = renderHeaders(uploadFile);
+  const headers = renderHeaders(headerCfg, uploadFile);
   let queryParams: string[] = [];
   if (paramsObj) {
     queryParams = generateQueryParams(paramsObj);
@@ -93,10 +107,11 @@ async function Put(
   baseUrl: string | null,
   path: string,
   sendData: object,
+  headerCfg?: object,
   paramsObj?: object,
   uploadFile?: File
 ) {
-  const headers = renderHeaders(uploadFile);
+  const headers = renderHeaders(headerCfg, uploadFile);
   let queryParams: string[] = [];
   if (paramsObj) {
     queryParams = generateQueryParams(paramsObj);
@@ -118,9 +133,10 @@ async function Put(
 async function Delete(
   baseUrl: string | null,
   path: string,
+  headerCfg?: object,
   paramsObj?: object
 ) {
-  const headers = renderHeaders();
+  const headers = renderHeaders(headerCfg);
   let queryParams: string[] = [];
   if (paramsObj) {
     queryParams = generateQueryParams(paramsObj);

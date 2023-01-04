@@ -7,7 +7,9 @@ export function matchExtension(targetFile: string, matches: string[]): boolean {
 
   const result = targetFile.match(`\\b${matches.join("|")}\\b`);
 
-  if (result?.length === null) {
+  console.log("result EXT: ", !result);
+
+  if (!result) {
     return false;
   }
 

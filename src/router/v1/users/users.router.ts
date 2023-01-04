@@ -1,6 +1,7 @@
 import express from "express";
-import { httpGetAllUsers } from "./users.controller";
+import { httpPostOneUser } from "./users.controller";
+import { verifyBody_PostOneUser } from "../../../middlewares/users.middleware";
 
 export const usersRouter = express.Router();
 
-usersRouter.get("/all", httpGetAllUsers);
+usersRouter.post("/oneuser", verifyBody_PostOneUser, httpPostOneUser);
