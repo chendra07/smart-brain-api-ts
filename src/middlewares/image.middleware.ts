@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import { UploadedFile } from "express-fileupload";
+import { z } from "zod";
+import { fromZodError } from "zod-validation-error";
 
 import { responses } from "../utils/responses";
 import { extensionExtractor, matchExtension } from "../utils/extensionFunction";
+import { checkParsePositive } from "../utils/requestChecker";
 
 export function verifyFiles_UploadImage(
   req: Request,
@@ -31,6 +34,114 @@ export function verifyFiles_UploadImage(
     if (userImage.size >= maxSize) {
       return responses.res400(req, res, null, "Maximum file limit is 4MB");
     }
+  }
+
+  next();
+}
+
+//===================================================
+
+const zodBodyDetectFace = z.object({
+  imageUrl: z.string().url(),
+  userid: z.number().positive(),
+  email: z.string().email(),
+});
+
+export type BodyDetectFace = z.infer<typeof zodBodyDetectFace>;
+
+export function verifyBody_detectFace(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const verifyZod = zodBodyDetectFace.safeParse(req.body);
+
+  if (!verifyZod.success) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid body (${fromZodError(verifyZod.error).message})`
+    );
+  }
+
+  next();
+}
+
+//===================================================
+
+const zodBodyViewUserHistory = z.object({
+  email: z.string().email(),
+  userid: z.number().positive(),
+  skip: z.number().gte(0),
+  limit: z.number().positive(),
+});
+
+export type BodyViewUserHistory = z.infer<typeof zodBodyViewUserHistory>;
+
+export function verifyBody_ViewUserHistory(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const verifyZod = zodBodyViewUserHistory.safeParse(req.body);
+
+  if (!verifyZod.success) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid Body (${fromZodError(verifyZod.error).message})`
+    );
+  }
+
+  next();
+}
+
+//===================================================
+
+const zodQueryDeleteHistory = z.object({
+  email: z.string().email(),
+  userid: z.string(),
+  historyid: z.string(),
+});
+
+export type QueryDeleteHistory = z.infer<typeof zodQueryDeleteHistory>;
+
+export function verifyQuery_DeleteHistory(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const verifyZod = zodQueryDeleteHistory.safeParse(req.query);
+
+  if (!verifyZod.success) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid Query (${fromZodError(verifyZod.error).message})`
+    );
+  }
+
+  const query = req.query as QueryDeleteHistory;
+
+  if (!checkParsePositive(query.userid)) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      "userid should be number and positive value"
+    );
+  }
+
+  if (!checkParsePositive(query.historyid)) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      "historyid should be number and positive value"
+    );
   }
 
   next();

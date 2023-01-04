@@ -40,7 +40,7 @@ export const UsersTablePgModel = sequelizeCfg.define(
 );
 
 export const zodUserType = z.object({
-  userid: z.number().optional(),
+  userid: z.number().positive().optional(),
   name: z.string().max(100),
   email: z.string().max(100).email(),
   joined: z.date(),
@@ -50,9 +50,9 @@ export const zodUserType = z.object({
 
 export type UserTableType = z.infer<typeof zodUserType>;
 
-export async function getOneUser(userid: number) {
+export async function getOneUser(userid: number, email: string) {
   return await UsersTablePgModel.findOne({
-    where: { userid: userid, isdeleted: false },
+    where: { userid, email, isdeleted: false },
     raw: true,
   })
     .then((result: unknown) => {
@@ -97,7 +97,7 @@ export async function updateUserData(
   t: Transaction | null
 ) {
   return await UsersTablePgModel.update(data, {
-    where: { email },
+    where: { email, isdeleted: false },
     transaction: t,
   })
     .then((result) => {

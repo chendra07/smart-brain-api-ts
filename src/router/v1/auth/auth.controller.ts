@@ -9,6 +9,7 @@ import {
   signNewAccessToken,
   signNewRefreshToken,
 } from "../../../utils/tokenJWT";
+import { verifyTokenAndUserData } from "../../../utils/requestChecker";
 
 //models
 import { sequelizeCfg } from "../../../models/postgresDB";
@@ -33,6 +34,7 @@ import {
   BodyLoginType,
   BodyRefreshTokenType,
   QueryLogoutType,
+  TokenAuth,
 } from "../../../middlewares/auth.middleware";
 
 export async function httpPostRegister(req: Request, res: Response) {
@@ -49,9 +51,11 @@ export async function httpPostRegister(req: Request, res: Response) {
       //generate token
       const accessToken = signNewAccessToken({
         email,
+        userid: userData.userid!,
       });
       const refreshToken = signNewRefreshToken({
         email,
+        userid: userData.userid!,
       });
 
       //insert to login table
@@ -116,9 +120,11 @@ export async function httpPostLogin(req: Request, res: Response) {
   //generate token
   const accessToken = signNewAccessToken({
     email: loginData.email,
+    userid: loginData.userid,
   });
   const refreshToken = signNewRefreshToken({
     email: loginData.email,
+    userid: loginData.userid,
   });
 
   //insert refresh token to db [login]
@@ -135,7 +141,7 @@ export async function httpPostLogin(req: Request, res: Response) {
     });
 
   //get user data
-  const userData = await getOneUser(loginData.userid).then((result) => {
+  const userData = await getOneUser(loginData.userid, email).then((result) => {
     const { userid, email, name, image } = result;
     return {
       userid,
@@ -158,7 +164,7 @@ export async function httpPostLogin(req: Request, res: Response) {
 }
 
 export async function httpRefreshToken(req: Request, res: Response) {
-  const { refreshToken, email } = req.body as BodyRefreshTokenType;
+  const { refreshToken, email, userid } = req.body as BodyRefreshTokenType;
 
   const userLoginData = await getOneLoginData(email);
 
@@ -184,14 +190,28 @@ export async function httpRefreshToken(req: Request, res: Response) {
       );
     }
 
-    const accessToken = signNewAccessToken({ refreshed_token: true, email });
+    const accessToken = signNewAccessToken({
+      refreshed_token: true,
+      email,
+      userid,
+    });
 
     return responses.res200(req, res, { accessToken }, "token refreshed");
   });
 }
 
 export async function httpLogoutUser(req: Request, res: Response) {
-  const { email } = req.query as QueryLogoutType;
+  const tokenBody = (req as any).userData as TokenAuth;
+  const { email, userid } = req.query as QueryLogoutType;
+
+  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
+    return responses.res401(
+      req,
+      res,
+      null,
+      "User is unauthorized to access this resource"
+    );
+  }
 
   sequelizeCfg
     .transaction(async (t) => {
@@ -204,7 +224,17 @@ export async function httpLogoutUser(req: Request, res: Response) {
 }
 
 export async function httpDeleteUser(req: Request, res: Response) {
-  const { email } = req.query as QueryLogoutType;
+  const tokenBody = (req as any).userData as TokenAuth;
+  const { email, userid } = req.query as QueryLogoutType;
+
+  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
+    return responses.res401(
+      req,
+      res,
+      null,
+      "User is unauthorized to access this resource"
+    );
+  }
 
   sequelizeCfg
     .transaction(async (t) => {
@@ -212,7 +242,7 @@ export async function httpDeleteUser(req: Request, res: Response) {
       await updateLoginData({ isdeleted: true }, email, t);
       await updateUserData({ isdeleted: true }, email, t);
 
-      return responses.res200(req, res, null, "User delete successfully");
+      return responses.res200(req, res, null, "User deleted successfully");
     })
     .catch((error) => {
       return responses.res500(req, res, null, error.toString());

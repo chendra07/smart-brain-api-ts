@@ -4,12 +4,28 @@ import { sequelizeCfg } from "../../../models/postgresDB";
 import { getOneUser } from "../../../models/users.model";
 
 //Request Body Type form Middleware
+import { TokenAuth } from "../../../middlewares/auth.middleware";
 import { BodyPostOneUserType } from "../../../middlewares/users.middleware";
 
-export async function httpPostOneUser(req: Request, res: Response) {
-  const { userid } = req.body as BodyPostOneUserType;
+//utils
+import { verifyTokenAndUserData } from "../../../utils/requestChecker";
 
-  return await getOneUser(userid)
+export async function httpPostOneUser(req: Request, res: Response) {
+  const tokenBody = (req as any).userData as TokenAuth;
+  const { userid, email } = req.body as BodyPostOneUserType;
+
+  console.log(tokenBody);
+
+  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
+    return responses.res401(
+      req,
+      res,
+      null,
+      "User is unauthorized to access this resource"
+    );
+  }
+
+  return await getOneUser(userid, email)
     .then((result) => {
       return responses.res200(req, res, {
         result,

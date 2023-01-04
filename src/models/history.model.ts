@@ -1,10 +1,10 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Transaction } from "sequelize";
 import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
 export const HistoryTablePgModel = sequelizeCfg.define(
-  "history",
+  "histories",
   {
     historyid: {
       type: DataTypes.INTEGER,
@@ -12,7 +12,7 @@ export const HistoryTablePgModel = sequelizeCfg.define(
       autoIncrement: true,
       primaryKey: true,
     },
-    imageUrl: {
+    imageurl: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
@@ -36,17 +36,68 @@ export const HistoryTablePgModel = sequelizeCfg.define(
 );
 
 export const zodHistoryType = z.object({
-  historyid: z.number().optional(),
+  historyid: z.number().positive().optional(),
   imageurl: z.string(),
   date: z.date(),
-  userid: z.number(),
-  isdeleted: z.boolean(),
+  userid: z.number().positive(),
+  isdeleted: z.boolean().optional(),
 });
 
 type HistoryTableType = z.infer<typeof zodHistoryType>;
 
-export async function userHistory(userid: number) {
-  HistoryTablePgModel.findAndCountAll({
-    where: { userid: userid, isdeleted: false },
+export async function putHistoryEntry(
+  data: HistoryTableType,
+  t: Transaction | null
+) {
+  const { imageurl, date, userid } = data;
+  return HistoryTablePgModel.create(
+    { imageurl, date, userid },
+    { transaction: t }
+  )
+    .then((data) => {
+      return data.dataValues as unknown as HistoryTableType;
+    })
+    .catch((error) => {
+      console.error(error);
+      throw new Error("[DB - History]: Unable to create new history data");
+    });
+}
+
+export async function findUserHistory(
+  userid: number,
+  skip: number,
+  limit: number
+) {
+  return HistoryTablePgModel.findAll({
+    where: { userid, isdeleted: false },
+    offset: skip * limit,
+    limit: limit,
+    raw: true,
+  }).then((data: unknown) => {
+    console.log(data);
+
+    return data as HistoryTableType[];
   });
+}
+
+export async function deleteUserHistory(
+  historyid: number,
+  userid: number,
+  t: Transaction | null
+) {
+  return HistoryTablePgModel.update(
+    {
+      isdeleted: true,
+    },
+    { where: { historyid, userid }, transaction: t }
+  )
+    .then((result) => {
+      return true;
+    })
+    .catch((error) => {
+      console.error(error);
+      throw new Error(
+        "[DB - History]: unable to update history database, try again later"
+      );
+    });
 }

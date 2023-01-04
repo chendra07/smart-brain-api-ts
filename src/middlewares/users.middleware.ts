@@ -5,7 +5,8 @@ import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
 
 const zodBodyPostOneUser = z.object({
-  userid: z.number(),
+  userid: z.number().positive(),
+  email: z.string().email(),
 });
 
 export type BodyPostOneUserType = z.infer<typeof zodBodyPostOneUser>;
