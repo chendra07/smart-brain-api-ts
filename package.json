@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc && node dist/server.js",
+    "start": "node dist/server.js",
+    "postinstall": "tsc",
     "watch": "nodemon -e ts -x \"npm run start\"",
     "cluster": "pm2 start server.js -i max",
     "test": "tsc && jest ./dist",
