@@ -11,7 +11,7 @@ export const app = express();
 
 const { ACCEPTED_URL, EXP_SESSION_SECRET } = process.env;
 
-const whitelist = ACCEPTED_URL!.split(", ");
+// const whitelist = ACCEPTED_URL!.split(", ");
 
 // app.use(
 //   cors({
