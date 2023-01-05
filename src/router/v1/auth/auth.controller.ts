@@ -165,7 +165,17 @@ export async function httpPostLogin(req: Request, res: Response) {
 }
 
 export async function httpRefreshToken(req: Request, res: Response) {
+  const tokenBody = (req as any).userData as TokenAuth;
   const { refreshToken, email, userid } = req.body as BodyRefreshTokenType;
+
+  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
+    return responses.res403(
+      req,
+      res,
+      null,
+      "User is unauthorized to access this resource"
+    );
+  }
 
   const userLoginData = await getOneLoginData(email);
 
@@ -181,24 +191,28 @@ export async function httpRefreshToken(req: Request, res: Response) {
     return responses.res403(req, res, null, "invalid refresh token");
   }
 
-  jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!, (err, userData) => {
-    if (err) {
-      return responses.res403(
-        req,
-        res,
-        null,
-        "Token expired or invalid, please login again."
-      );
+  jwt.verify(
+    refreshToken,
+    process.env.JWT_REFRESH_SECRET!,
+    (err: any, userData: any) => {
+      if (err) {
+        return responses.res403(
+          req,
+          res,
+          null,
+          "Token expired or invalid, please login again."
+        );
+      }
+
+      const accessToken = signNewAccessToken({
+        refreshed_token: true,
+        email,
+        userid,
+      });
+
+      return responses.res200(req, res, { accessToken }, "token refreshed");
     }
-
-    const accessToken = signNewAccessToken({
-      refreshed_token: true,
-      email,
-      userid,
-    });
-
-    return responses.res200(req, res, { accessToken }, "token refreshed");
-  });
+  );
 }
 
 export async function httpLogoutUser(req: Request, res: Response) {

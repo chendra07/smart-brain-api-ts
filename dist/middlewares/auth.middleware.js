@@ -82,6 +82,9 @@ function verifyBody_RefreshToken(req, res, next) {
     if (!verifyZod.success) {
         return responses_1.responses.res400(req, res, null, `invalid body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
+    const { refreshToken } = req.body;
+    const userData = jsonwebtoken_1.default.decode(refreshToken);
+    req.userData = userData;
     next();
 }
 exports.verifyBody_RefreshToken = verifyBody_RefreshToken;

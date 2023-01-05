@@ -109,7 +109,11 @@ async function httpPostLogin(req, res) {
 }
 exports.httpPostLogin = httpPostLogin;
 async function httpRefreshToken(req, res) {
+    const tokenBody = req.userData;
     const { refreshToken, email, userid } = req.body;
+    if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
+    }
     const userLoginData = await (0, login_model_1.getOneLoginData)(email);
     if (!userLoginData) {
         return responses_1.responses.res404(req, res, null, "User not found");

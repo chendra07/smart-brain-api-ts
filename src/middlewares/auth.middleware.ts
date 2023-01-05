@@ -158,6 +158,12 @@ export function verifyBody_RefreshToken(
     );
   }
 
+  const { refreshToken } = req.body as BodyRefreshTokenType;
+
+  const userData = jwt.decode(refreshToken) as TokenAuth;
+
+  (req as any).userData = userData;
+
   next();
 }
 
