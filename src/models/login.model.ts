@@ -83,6 +83,7 @@ export async function getOneLoginData(email: string) {
 type UpdateLoginInput = {
   refresh_token?: string | null;
   isdeleted?: boolean;
+  hash?: string;
 };
 
 export async function updateLoginData(

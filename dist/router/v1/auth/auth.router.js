@@ -14,3 +14,4 @@ exports.authRouter.post("/login", auth_middleware_1.verifyBody_Login, auth_contr
 exports.authRouter.put("/refreshtoken", auth_middleware_1.verifyBody_RefreshToken, auth_controller_1.httpRefreshToken);
 exports.authRouter.delete("/logout", auth_middleware_1.verifyToken, auth_middleware_1.verifyQuery_Logout, auth_controller_1.httpLogoutUser);
 exports.authRouter.delete("/deleteuser", auth_middleware_1.verifyToken, auth_middleware_1.verifyQuery_DeleteUser, auth_controller_1.httpDeleteUser);
+exports.authRouter.put("/changepassword", auth_middleware_1.verifyToken, auth_middleware_1.verifyBody_ChangePassword, auth_controller_1.httpChangePassword);

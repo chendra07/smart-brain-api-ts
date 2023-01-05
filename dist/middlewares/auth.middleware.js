@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyQuery_DeleteUser = exports.verifyQuery_Logout = exports.verifyBody_RefreshToken = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifyToken = void 0;
+exports.verifyBody_ChangePassword = exports.verifyQuery_DeleteUser = exports.verifyQuery_Logout = exports.verifyBody_RefreshToken = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifyToken = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_1 = require("zod");
@@ -46,7 +46,7 @@ function verifyBody_Login(req, res, next) {
     const { password } = req.body;
     const verifyPass = (0, passwordValidator_1.passwordValidator)(password);
     if (!verifyPass) {
-        return responses_1.responses.res400(req, res, null, "Password did not meet the requirement");
+        return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
     }
     next();
 }
@@ -65,8 +65,7 @@ function verifyBody_Register(req, res, next) {
         return responses_1.responses.res400(req, res, null, `Invalid register body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
     const { password } = req.body;
-    const verifyPass = (0, passwordValidator_1.passwordValidator)(password);
-    if (!verifyPass) {
+    if (!(0, passwordValidator_1.passwordValidator)(password)) {
         return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
     }
     next();
@@ -120,3 +119,22 @@ function verifyQuery_DeleteUser(req, res, next) {
     next();
 }
 exports.verifyQuery_DeleteUser = verifyQuery_DeleteUser;
+//==========================================================================
+const zodBodyChangePassword = zod_1.z.object({
+    email: zod_1.z.string().email(),
+    userid: zod_1.z.number().positive(),
+    oldPassword: zod_1.z.string(),
+    newPassword: zod_1.z.string(),
+});
+function verifyBody_ChangePassword(req, res, next) {
+    const verifyZod = zodBodyChangePassword.safeParse(req.body);
+    if (!verifyZod.success) {
+        return responses_1.responses.res400(req, res, null, `Invalid Body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
+    }
+    const { newPassword, oldPassword } = req.body;
+    if (!(0, passwordValidator_1.passwordValidator)(newPassword) || !(0, passwordValidator_1.passwordValidator)(oldPassword)) {
+        return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
+    }
+    next();
+}
+exports.verifyBody_ChangePassword = verifyBody_ChangePassword;

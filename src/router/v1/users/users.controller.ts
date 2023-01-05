@@ -17,7 +17,7 @@ export async function httpPostOneUser(req: Request, res: Response) {
   console.log(tokenBody);
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,

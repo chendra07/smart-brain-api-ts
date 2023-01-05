@@ -13,7 +13,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const router_1 = require("./router");
 exports.app = (0, express_1.default)();
 const { ACCEPTED_URL, EXP_SESSION_SECRET } = process.env;
-const whitelist = ACCEPTED_URL.split(", ");
+// const whitelist = ACCEPTED_URL!.split(", ");
 // app.use(
 //   cors({
 //     origin: (origin, callback) => {

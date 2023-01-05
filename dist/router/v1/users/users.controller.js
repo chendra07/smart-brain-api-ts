@@ -10,7 +10,7 @@ async function httpPostOneUser(req, res) {
     const { userid, email } = req.body;
     console.log(tokenBody);
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     return await (0, users_model_1.getOneUser)(userid, email)
         .then((result) => {

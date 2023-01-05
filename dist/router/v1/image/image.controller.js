@@ -14,7 +14,7 @@ async function detectFaceAI(req, res) {
     const { imageUrl, email, userid } = req.body;
     const MODEL_ID = "face-detection";
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     const body = {
         user_app_id: {
@@ -56,7 +56,7 @@ async function viewUserHistory(req, res) {
     const tokenBody = req.userData;
     const { email, userid, limit, skip } = req.body;
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     const userHistory = await (0, history_model_1.findUserHistory)(userid, skip, limit);
     return responses_1.responses.res200(req, res, userHistory);
@@ -66,7 +66,7 @@ async function deleteHistory(req, res) {
     const tokenBody = req.userData;
     const { email, userid, historyid } = req.query;
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {

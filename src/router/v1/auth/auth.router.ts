@@ -5,6 +5,7 @@ import {
   httpRefreshToken,
   httpLogoutUser,
   httpDeleteUser,
+  httpChangePassword,
 } from "./auth.controller";
 import {
   verifyBody_Register,
@@ -12,6 +13,7 @@ import {
   verifyBody_RefreshToken,
   verifyQuery_Logout,
   verifyQuery_DeleteUser,
+  verifyBody_ChangePassword,
   verifyToken,
 } from "../../../middlewares/auth.middleware";
 import { verifyFiles_UploadImage } from "../../../middlewares/image.middleware";
@@ -36,4 +38,11 @@ authRouter.delete(
   verifyToken,
   verifyQuery_DeleteUser,
   httpDeleteUser
+);
+
+authRouter.put(
+  "/changepassword",
+  verifyToken,
+  verifyBody_ChangePassword,
+  httpChangePassword
 );

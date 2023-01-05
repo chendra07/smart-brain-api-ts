@@ -84,7 +84,7 @@ export function verifyBody_Login(
       req,
       res,
       null,
-      "Password did not meet the requirement"
+      "Password did not meet the security requirement"
     );
   }
 
@@ -120,9 +120,7 @@ export function verifyBody_Register(
 
   const { password } = req.body as BodyRegisterType;
 
-  const verifyPass = passwordValidator(password);
-
-  if (!verifyPass) {
+  if (!passwordValidator(password)) {
     return responses.res400(
       req,
       res,
@@ -235,6 +233,47 @@ export function verifyQuery_DeleteUser(
       res,
       null,
       `Invalid Query (userid should be a positive number)`
+    );
+  }
+
+  next();
+}
+
+//==========================================================================
+
+const zodBodyChangePassword = z.object({
+  email: z.string().email(),
+  userid: z.number().positive(),
+  oldPassword: z.string(),
+  newPassword: z.string(),
+});
+
+export type BodyChangePassword = z.infer<typeof zodBodyChangePassword>;
+
+export function verifyBody_ChangePassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const verifyZod = zodBodyChangePassword.safeParse(req.body);
+
+  if (!verifyZod.success) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid Body (${fromZodError(verifyZod.error).message})`
+    );
+  }
+
+  const { newPassword, oldPassword } = req.body as BodyChangePassword;
+
+  if (!passwordValidator(newPassword) || !passwordValidator(oldPassword)) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      "Password did not meet the security requirement"
     );
   }
 

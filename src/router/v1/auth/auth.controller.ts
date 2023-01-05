@@ -34,6 +34,7 @@ import {
   BodyLoginType,
   BodyRefreshTokenType,
   QueryLogoutType,
+  BodyChangePassword,
   TokenAuth,
 } from "../../../middlewares/auth.middleware";
 
@@ -205,7 +206,7 @@ export async function httpLogoutUser(req: Request, res: Response) {
   const { email, userid } = req.query as QueryLogoutType;
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,
@@ -228,7 +229,7 @@ export async function httpDeleteUser(req: Request, res: Response) {
   const { email, userid } = req.query as QueryLogoutType;
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,
@@ -247,4 +248,39 @@ export async function httpDeleteUser(req: Request, res: Response) {
     .catch((error) => {
       return responses.res500(req, res, null, error.toString());
     });
+}
+
+export async function httpChangePassword(req: Request, res: Response) {
+  const tokenBody = (req as any).userData as TokenAuth;
+  const { email, userid, newPassword, oldPassword } =
+    req.body as BodyChangePassword;
+
+  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
+    return responses.res403(
+      req,
+      res,
+      null,
+      "User is unauthorized to access this resource"
+    );
+  }
+
+  const loginData = await getOneLoginData(email);
+
+  //if old password did not match the database: reject request
+  if (!comparePassword(oldPassword, loginData.hash)) {
+    return responses.res403(req, res, null, "Unable to update password");
+  }
+
+  //hash new pass
+  const hashNewPass = hashPassword(newPassword);
+
+  sequelizeCfg
+    .transaction(async (t) => {
+      await updateLoginData({ hash: hashNewPass }, email, t);
+    })
+    .catch((error) => {
+      return responses.res500(req, res, null, "Unable to update password");
+    });
+
+  return responses.res200(req, res, null, "password successfully modified");
 }

@@ -31,7 +31,7 @@ export async function detectFaceAI(req: Request, res: Response) {
   const MODEL_ID = "face-detection";
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,
@@ -97,7 +97,7 @@ export async function viewUserHistory(req: Request, res: Response) {
   const { email, userid, limit, skip } = req.body as BodyViewUserHistory;
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,
@@ -115,7 +115,7 @@ export async function deleteHistory(req: Request, res: Response) {
   const { email, userid, historyid } = req.query as QueryDeleteHistory;
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res401(
+    return responses.res403(
       req,
       res,
       null,

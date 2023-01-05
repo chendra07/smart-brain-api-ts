@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.httpDeleteUser = exports.httpLogoutUser = exports.httpRefreshToken = exports.httpPostLogin = exports.httpPostRegister = void 0;
+exports.httpChangePassword = exports.httpDeleteUser = exports.httpLogoutUser = exports.httpRefreshToken = exports.httpPostLogin = exports.httpPostRegister = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 //utils
 const responses_1 = require("../../../utils/responses");
@@ -137,7 +137,7 @@ async function httpLogoutUser(req, res) {
     const tokenBody = req.userData;
     const { email, userid } = req.query;
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
@@ -153,7 +153,7 @@ async function httpDeleteUser(req, res) {
     const tokenBody = req.userData;
     const { email, userid } = req.query;
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res401(req, res, null, "User is unauthorized to access this resource");
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
@@ -167,3 +167,26 @@ async function httpDeleteUser(req, res) {
     });
 }
 exports.httpDeleteUser = httpDeleteUser;
+async function httpChangePassword(req, res) {
+    const tokenBody = req.userData;
+    const { email, userid, newPassword, oldPassword } = req.body;
+    if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
+        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
+    }
+    const loginData = await (0, login_model_1.getOneLoginData)(email);
+    //if old password did not match the database: reject request
+    if (!(0, bcryptPassword_1.comparePassword)(oldPassword, loginData.hash)) {
+        return responses_1.responses.res403(req, res, null, "Unable to update password");
+    }
+    //hash new pass
+    const hashNewPass = (0, bcryptPassword_1.hashPassword)(newPassword);
+    postgresDB_1.sequelizeCfg
+        .transaction(async (t) => {
+        await (0, login_model_1.updateLoginData)({ hash: hashNewPass }, email, t);
+    })
+        .catch((error) => {
+        return responses_1.responses.res500(req, res, null, "Unable to update password");
+    });
+    return responses_1.responses.res200(req, res, null, "password successfully modified");
+}
+exports.httpChangePassword = httpChangePassword;
