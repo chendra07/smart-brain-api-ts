@@ -16,8 +16,7 @@ const login_model_1 = require("../../../models/login.model");
 const users_model_1 = require("../../../models/users.model");
 const cloudinary_model_1 = require("../../../models/cloudinary.model");
 async function httpPostRegister(req, res) {
-    const { email, password, name } = req.body;
-    const image = req.files?.image;
+    const { email, password, name, image64 } = req.body;
     let tempFileUrl;
     let tempFileName;
     postgresDB_1.sequelizeCfg
@@ -41,9 +40,9 @@ async function httpPostRegister(req, res) {
             refresh_token: refreshToken,
         }, t);
         //if user send image when register, upload the image
-        if (image) {
+        if (image64) {
             const { userid, name } = userData;
-            const { fileName, url } = await (0, cloudinary_model_1.uploadFileCloudinary)(image, userid, name);
+            const { fileName, url } = await (0, cloudinary_model_1.uploadFileCloudinary)(image64, userid, name);
             tempFileUrl = url;
             tempFileName = fileName;
         }

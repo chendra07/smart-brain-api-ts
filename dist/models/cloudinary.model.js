@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteFileCloudinary = exports.uploadFileCloudinary = void 0;
 const cloudinary_1 = __importDefault(require("cloudinary"));
-const extensionFunction_1 = require("../utils/extensionFunction");
+const file_type_1 = require("file-type");
 const { CLD_NAME, CLD_API_KEY, CLD_API_SECRET } = process.env;
 const cloudinaryV2 = cloudinary_1.default.v2;
 cloudinaryV2.config({
@@ -13,14 +13,12 @@ cloudinaryV2.config({
     api_key: CLD_API_KEY,
     api_secret: CLD_API_SECRET,
 });
-async function uploadFileCloudinary(image, userId, userName) {
+async function uploadFileCloudinary(image64, userId, userName) {
     try {
-        const ext = (0, extensionFunction_1.extensionExtractor)(image.name);
-        //get the extension & removing "." (dot) from regex result
-        const dataImagePrefix = `data:image/${ext[ext.length - 1].substring(1)};base64,`;
-        //convert image buffer to base64 string
-        const base64File = image.data.toString("base64");
-        const uploadedResponse = await cloudinaryV2.uploader.upload(`${dataImagePrefix}${base64File}`, {
+        const base64Type = await (0, file_type_1.fromBuffer)(Buffer.from(image64, "base64"));
+        //get the extension from base64 string
+        const dataImagePrefix = `data:image/${base64Type.ext};base64,`;
+        const uploadedResponse = await cloudinaryV2.uploader.upload(`${dataImagePrefix}${image64}`, {
             upload_preset: "smart-brain-dev",
             public_id: `${userId}-${userName}`,
         });

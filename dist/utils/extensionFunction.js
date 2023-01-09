@@ -7,9 +7,7 @@ function extensionExtractor(fileName) {
 exports.extensionExtractor = extensionExtractor;
 function matchExtension(targetFile, matches) {
     //match target with specified extension
-    const result = targetFile.match(`\\b${matches.join("|")}\\b`);
-    console.log("result EXT: ", !result);
-    if (!result) {
+    if (!targetFile.match(`\\b${matches.join("|")}\\b`)) {
         return false;
     }
     return true;

@@ -8,4 +8,6 @@ const express_1 = __importDefault(require("express"));
 const users_controller_1 = require("./users.controller");
 const users_middleware_1 = require("../../../middlewares/users.middleware");
 exports.usersRouter = express_1.default.Router();
-exports.usersRouter.post("/oneuser", users_middleware_1.verifyBody_PostOneUser, users_controller_1.httpPostOneUser);
+exports.usersRouter.post("/oneuser", users_middleware_1.verifyBody_OneUser, users_controller_1.httpOneUser);
+exports.usersRouter.put("/updateuser", users_middleware_1.verifyBody_UpdateUser, users_controller_1.httpUpdateUser);
+// usersRouter.post("/dummy", httpDummyReq);

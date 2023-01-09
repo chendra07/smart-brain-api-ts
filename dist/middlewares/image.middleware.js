@@ -1,33 +1,37 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyQuery_DeleteHistory = exports.verifyBody_ViewUserHistory = exports.verifyBody_detectFace = exports.verifyFiles_UploadImage = void 0;
+exports.verifyQuery_DeleteHistory = exports.verifyBody_ViewUserHistory = exports.verifyBody_detectFace = void 0;
 const zod_1 = require("zod");
 const zod_validation_error_1 = require("zod-validation-error");
 const responses_1 = require("../utils/responses");
-const extensionFunction_1 = require("../utils/extensionFunction");
 const requestChecker_1 = require("../utils/requestChecker");
-function verifyFiles_UploadImage(req, res, next) {
-    if (req.files?.image) {
-        const maxSize = 4000000; //1 MB = 1000000 Bytes (in decimal), max: 4 mb or 4,000,000 bytes
-        const { image } = req.files;
-        const userImage = image;
-        const ext = (0, extensionFunction_1.extensionExtractor)(userImage.name) ?? "undefined";
-        //block request if name has no extension
-        if (ext === "undefined") {
-            return responses_1.responses.res400(req, res, null, "Invalid file name");
-        }
-        //block request if extension is not png, jpg, or jpeg
-        if (!(0, extensionFunction_1.matchExtension)(ext[ext.length - 1].substring(1), ["png", "jpg", "jpeg"])) {
-            return responses_1.responses.res400(req, res, null, "Invalid file extension");
-        }
-        //block request if size limit is more than 4 mb
-        if (userImage.size >= maxSize) {
-            return responses_1.responses.res400(req, res, null, "Maximum file limit is 4MB");
-        }
-    }
-    next();
-}
-exports.verifyFiles_UploadImage = verifyFiles_UploadImage;
+// export function verifyFiles_UploadImage(
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) {
+//   if (req.files?.image) {
+//     const maxSize = 4000000; //1 MB = 1000000 Bytes (in decimal), max: 4 mb or 4,000,000 bytes
+//     const { image } = req.files;
+//     const userImage = image as UploadedFile;
+//     const ext = extensionExtractor(userImage.name) ?? "undefined";
+//     //block request if name has no extension
+//     if (ext === "undefined") {
+//       return responses.res400(req, res, null, "Invalid file name");
+//     }
+//     //block request if extension is not png, jpg, or jpeg
+//     if (
+//       !matchExtension(ext[ext.length - 1].substring(1), ["png", "jpg", "jpeg"])
+//     ) {
+//       return responses.res400(req, res, null, "Invalid file extension");
+//     }
+//     //block request if size limit is more than 4 mb
+//     if (userImage.size >= maxSize) {
+//       return responses.res400(req, res, null, "Maximum file limit is 4MB");
+//     }
+//   }
+//   next();
+// }
 //===================================================
 const zodBodyDetectFace = zod_1.z.object({
     imageUrl: zod_1.z.string().url(),
@@ -78,3 +82,7 @@ function verifyQuery_DeleteHistory(req, res, next) {
     next();
 }
 exports.verifyQuery_DeleteHistory = verifyQuery_DeleteHistory;
+//===================================================
+const zodBodyDummy = zod_1.z.object({
+    image64: zod_1.z.string(),
+});

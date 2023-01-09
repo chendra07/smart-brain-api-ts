@@ -39,8 +39,7 @@ import {
 } from "../../../middlewares/auth.middleware";
 
 export async function httpPostRegister(req: Request, res: Response) {
-  const { email, password, name } = req.body as BodyRegisterType;
-  const image = req.files?.image as unknown as UploadedFile | null;
+  const { email, password, name, image64 } = req.body as BodyRegisterType;
   let tempFileUrl: string | undefined;
   let tempFileName: string | undefined;
 
@@ -71,10 +70,10 @@ export async function httpPostRegister(req: Request, res: Response) {
       );
 
       //if user send image when register, upload the image
-      if (image) {
+      if (image64) {
         const { userid, name } = userData;
         const { fileName, url } = await uploadFileCloudinary(
-          image,
+          image64,
           userid!,
           name
         );

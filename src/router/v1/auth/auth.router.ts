@@ -16,16 +16,10 @@ import {
   verifyBody_ChangePassword,
   verifyToken,
 } from "../../../middlewares/auth.middleware";
-import { verifyFiles_UploadImage } from "../../../middlewares/image.middleware";
 
 export const authRouter = express.Router();
 
-authRouter.post(
-  "/register",
-  verifyBody_Register,
-  verifyFiles_UploadImage,
-  httpPostRegister
-);
+authRouter.post("/register", verifyBody_Register, httpPostRegister);
 
 authRouter.post("/login", verifyBody_Login, httpPostLogin);
 

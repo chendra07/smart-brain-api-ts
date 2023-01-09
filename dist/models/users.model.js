@@ -24,7 +24,7 @@ exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
         allowNull: false,
     },
     image: {
-        type: sequelize_1.DataTypes.STRING(100),
+        type: sequelize_1.DataTypes.STRING(255),
         allowNull: true,
     },
     isdeleted: {
@@ -36,12 +36,12 @@ exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
     timestamps: false,
 });
 exports.zodUserType = zod_1.z.object({
-    userid: zod_1.z.number().positive().optional(),
+    userid: zod_1.z.number().positive(),
     name: zod_1.z.string().max(100),
     email: zod_1.z.string().max(100).email(),
     joined: zod_1.z.date(),
     image: zod_1.z.string().optional(),
-    isdeleted: zod_1.z.boolean().optional(),
+    isdeleted: zod_1.z.boolean(),
 });
 async function getOneUser(userid, email) {
     return await exports.UsersTablePgModel.findOne({

@@ -6,6 +6,7 @@ import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
 import { passwordValidator } from "../utils/passwordValidator";
 import { checkParsePositive } from "../utils/requestChecker";
+import { base64ImgCheck } from "../utils/base64Checker";
 
 dotenv.config();
 const { JWT_ACCESS_SECRET } = process.env;
@@ -99,11 +100,12 @@ const zodBodyRegister = z.object({
   password: z
     .string()
     .min(8, { message: "Password should be 8 characters or more" }),
+  image64: z.string().optional(),
 });
 
 export type BodyRegisterType = z.infer<typeof zodBodyRegister>;
 
-export function verifyBody_Register(
+export async function verifyBody_Register(
   req: Request,
   res: Response,
   next: NextFunction
@@ -118,7 +120,7 @@ export function verifyBody_Register(
     );
   }
 
-  const { password } = req.body as BodyRegisterType;
+  const { password, image64 } = req.body as BodyRegisterType;
 
   if (!passwordValidator(password)) {
     return responses.res400(
@@ -126,6 +128,18 @@ export function verifyBody_Register(
       res,
       null,
       "Password did not meet the security requirement"
+    );
+  }
+
+  //if base64 exists: check size & extension
+  //if size or extension invalid: reject
+
+  if (image64 && !(await base64ImgCheck(image64))) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      "image64 extension must be png/jpg/jpeg and maximum size is 4 MB"
     );
   }
 

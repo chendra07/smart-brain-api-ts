@@ -1,7 +1,14 @@
 import express from "express";
-import { httpPostOneUser } from "./users.controller";
-import { verifyBody_PostOneUser } from "../../../middlewares/users.middleware";
+import { httpOneUser, httpUpdateUser, httpDummyReq } from "./users.controller";
+import {
+  verifyBody_OneUser,
+  verifyBody_UpdateUser,
+} from "../../../middlewares/users.middleware";
 
 export const usersRouter = express.Router();
 
-usersRouter.post("/oneuser", verifyBody_PostOneUser, httpPostOneUser);
+usersRouter.post("/oneuser", verifyBody_OneUser, httpOneUser);
+
+usersRouter.put("/updateuser", verifyBody_UpdateUser, httpUpdateUser);
+
+// usersRouter.post("/dummy", httpDummyReq);

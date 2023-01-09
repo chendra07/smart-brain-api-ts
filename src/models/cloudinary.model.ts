@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { UploadedFile } from "express-fileupload";
 import cloudinary from "cloudinary";
 
-import { responses } from "../utils/responses";
-import { extensionExtractor } from "../utils/extensionFunction";
+import { fromBuffer } from "file-type";
 
 const { CLD_NAME, CLD_API_KEY, CLD_API_SECRET } = process.env;
 
@@ -16,23 +14,17 @@ cloudinaryV2.config({
 });
 
 export async function uploadFileCloudinary(
-  image: UploadedFile,
+  image64: string,
   userId: number,
   userName: string
 ) {
   try {
-    const ext = extensionExtractor(image.name);
-
-    //get the extension & removing "." (dot) from regex result
-    const dataImagePrefix = `data:image/${ext![ext!.length - 1].substring(
-      1
-    )};base64,`;
-
-    //convert image buffer to base64 string
-    const base64File = image.data.toString("base64");
+    const base64Type = await fromBuffer(Buffer.from(image64, "base64"));
+    //get the extension from base64 string
+    const dataImagePrefix = `data:image/${base64Type!.ext};base64,`;
 
     const uploadedResponse = await cloudinaryV2.uploader.upload(
-      `${dataImagePrefix}${base64File}`,
+      `${dataImagePrefix}${image64}`,
       {
         upload_preset: "smart-brain-dev",
         public_id: `${userId}-${userName}`,
