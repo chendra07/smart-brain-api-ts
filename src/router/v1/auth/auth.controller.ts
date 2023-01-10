@@ -97,8 +97,8 @@ export async function httpPostRegister(req: Request, res: Response) {
       if (tempFileName) {
         //if registration failed and image has been uploaded, delete the file
         await deleteFileCloudinary(tempFileName);
-        return responses.res500(req, res, null, error.toString());
       }
+      return responses.res500(req, res, null, error.toString());
     });
 }
 
@@ -289,11 +289,20 @@ export async function httpChangePassword(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await updateLoginData({ hash: hashNewPass }, email, t);
+      await updateLoginData(
+        { hash: hashNewPass, refresh_token: null },
+        email,
+        t
+      );
     })
     .catch((error) => {
       return responses.res500(req, res, null, "Unable to update password");
     });
 
-  return responses.res200(req, res, null, "password successfully modified");
+  return responses.res200(
+    req,
+    res,
+    null,
+    "password successfully updated, please login again"
+  );
 }

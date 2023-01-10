@@ -45,7 +45,7 @@ export type UserTableType = {
   isdeleted: boolean;
   name: string;
   joined: Date;
-  image: string;
+  image?: string;
 };
 
 export async function getOneUser(userid: number, email: string) {

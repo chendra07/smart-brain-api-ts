@@ -61,8 +61,8 @@ async function httpPostRegister(req, res) {
         if (tempFileName) {
             //if registration failed and image has been uploaded, delete the file
             await (0, cloudinary_model_1.deleteFileCloudinary)(tempFileName);
-            return responses_1.responses.res500(req, res, null, error.toString());
         }
+        return responses_1.responses.res500(req, res, null, error.toString());
     });
 }
 exports.httpPostRegister = httpPostRegister;
@@ -185,11 +185,11 @@ async function httpChangePassword(req, res) {
     const hashNewPass = (0, bcryptPassword_1.hashPassword)(newPassword);
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
-        await (0, login_model_1.updateLoginData)({ hash: hashNewPass }, email, t);
+        await (0, login_model_1.updateLoginData)({ hash: hashNewPass, refresh_token: null }, email, t);
     })
         .catch((error) => {
         return responses_1.responses.res500(req, res, null, "Unable to update password");
     });
-    return responses_1.responses.res200(req, res, null, "password successfully modified");
+    return responses_1.responses.res200(req, res, null, "password successfully updated, please login again");
 }
 exports.httpChangePassword = httpChangePassword;
