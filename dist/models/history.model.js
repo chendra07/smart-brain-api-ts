@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUserHistory = exports.findUserHistory = exports.putHistoryEntry = exports.zodHistoryType = exports.HistoryTablePgModel = void 0;
+exports.deleteUserHistory = exports.findUserHistory = exports.createHistoryEntry = exports.HistoryTablePgModel = void 0;
 const sequelize_1 = require("sequelize");
-const zod_1 = require("zod");
 const postgresDB_1 = require("./postgresDB");
 exports.HistoryTablePgModel = postgresDB_1.sequelizeCfg.define("histories", {
     historyid: {
@@ -31,14 +30,7 @@ exports.HistoryTablePgModel = postgresDB_1.sequelizeCfg.define("histories", {
 }, {
     timestamps: false,
 });
-exports.zodHistoryType = zod_1.z.object({
-    historyid: zod_1.z.number().positive().optional(),
-    imageurl: zod_1.z.string(),
-    date: zod_1.z.date(),
-    userid: zod_1.z.number().positive(),
-    isdeleted: zod_1.z.boolean().optional(),
-});
-async function putHistoryEntry(data, t) {
+async function createHistoryEntry(data, t) {
     const { imageurl, date, userid } = data;
     return exports.HistoryTablePgModel.create({ imageurl, date, userid }, { transaction: t })
         .then((data) => {
@@ -49,7 +41,7 @@ async function putHistoryEntry(data, t) {
         throw new Error("[DB - History]: Unable to create new history data");
     });
 }
-exports.putHistoryEntry = putHistoryEntry;
+exports.createHistoryEntry = createHistoryEntry;
 async function findUserHistory(userid, skip, limit) {
     return exports.HistoryTablePgModel.findAll({
         where: { userid, isdeleted: false },

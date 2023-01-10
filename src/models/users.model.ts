@@ -39,16 +39,14 @@ export const UsersTablePgModel = sequelizeCfg.define(
   }
 );
 
-export const zodUserType = z.object({
-  userid: z.number().positive(),
-  name: z.string().max(100),
-  email: z.string().max(100).email(),
-  joined: z.date(),
-  image: z.string().optional(),
-  isdeleted: z.boolean(),
-});
-
-export type UserTableType = z.infer<typeof zodUserType>;
+export type UserTableType = {
+  userid: number;
+  email: string;
+  isdeleted: boolean;
+  name: string;
+  joined: Date;
+  image: string;
+};
 
 export async function getOneUser(userid: number, email: string) {
   return await UsersTablePgModel.findOne({

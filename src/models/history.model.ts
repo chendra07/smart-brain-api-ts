@@ -35,18 +35,22 @@ export const HistoryTablePgModel = sequelizeCfg.define(
   }
 );
 
-export const zodHistoryType = z.object({
-  historyid: z.number().positive().optional(),
-  imageurl: z.string(),
-  date: z.date(),
-  userid: z.number().positive(),
-  isdeleted: z.boolean().optional(),
-});
+type HistoryTableType = {
+  historyid: number;
+  imageurl: string;
+  date: Date;
+  userid: number;
+  isdeleted: boolean;
+};
 
-type HistoryTableType = z.infer<typeof zodHistoryType>;
+type CreateHistoryEntryInput = {
+  imageurl: string;
+  date: Date;
+  userid: number;
+};
 
-export async function putHistoryEntry(
-  data: HistoryTableType,
+export async function createHistoryEntry(
+  data: CreateHistoryEntryInput,
   t: Transaction | null
 ) {
   const { imageurl, date, userid } = data;

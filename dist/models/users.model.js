@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserData = exports.createNewUser = exports.getOneUser = exports.zodUserType = exports.UsersTablePgModel = void 0;
+exports.updateUserData = exports.createNewUser = exports.getOneUser = exports.UsersTablePgModel = void 0;
 const sequelize_1 = require("sequelize");
-const zod_1 = require("zod");
 const postgresDB_1 = require("./postgresDB");
 exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
     userid: {
@@ -34,14 +33,6 @@ exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
     },
 }, {
     timestamps: false,
-});
-exports.zodUserType = zod_1.z.object({
-    userid: zod_1.z.number().positive(),
-    name: zod_1.z.string().max(100),
-    email: zod_1.z.string().max(100).email(),
-    joined: zod_1.z.date(),
-    image: zod_1.z.string().optional(),
-    isdeleted: zod_1.z.boolean(),
 });
 async function getOneUser(userid, email) {
     return await exports.UsersTablePgModel.findOne({

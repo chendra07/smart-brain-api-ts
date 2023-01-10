@@ -6,7 +6,7 @@ import { responses } from "../../../utils/responses";
 //model
 import {
   findUserHistory,
-  putHistoryEntry,
+  createHistoryEntry,
   deleteUserHistory,
 } from "../../../models/history.model";
 
@@ -61,7 +61,7 @@ export async function detectFaceAI(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await putHistoryEntry(
+      await createHistoryEntry(
         { date: new Date(), imageurl: imageUrl, userid },
         t
       );

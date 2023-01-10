@@ -36,7 +36,7 @@ async function detectFaceAI(req, res) {
     };
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
-        await (0, history_model_1.putHistoryEntry)({ date: new Date(), imageurl: imageUrl, userid }, t);
+        await (0, history_model_1.createHistoryEntry)({ date: new Date(), imageurl: imageUrl, userid }, t);
         const imageResult = await axiosRequest_1.axiosRequest
             .Post(`https://api.clarifai.com`, `/v2/models/${MODEL_ID}/outputs`, body, headerCfg)
             .then((result) => {
