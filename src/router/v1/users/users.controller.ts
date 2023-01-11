@@ -37,9 +37,7 @@ export async function httpOneUser(req: Request, res: Response) {
 
   return await getOneUser(parseInt(userid), email)
     .then((result) => {
-      return responses.res200(req, res, {
-        result,
-      });
+      return responses.res200(req, res, result);
     })
     .catch((error) => {
       return responses.res500(req, res, null, error.toString());
