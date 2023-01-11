@@ -7,19 +7,19 @@ import { responses } from "../utils/responses";
 import { checkParsePositive } from "../utils/requestChecker";
 import { base64ImgCheck } from "../utils/base64Checker";
 
-const zodBodyPostOneUser = z.object({
-  userid: z.number().positive(),
+const zodQueryOneUser = z.object({
+  userid: z.string(),
   email: z.string().email(),
 });
 
-export type BodyPostOneUserType = z.infer<typeof zodBodyPostOneUser>;
+export type QueryOneUserType = z.infer<typeof zodQueryOneUser>;
 
-export function verifyBody_OneUser(
+export function verifyQuery_OneUser(
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const verifyZod = zodBodyPostOneUser.safeParse(req.body);
+  const verifyZod = zodQueryOneUser.safeParse(req.query);
 
   if (!verifyZod.success) {
     return responses.res400(
@@ -27,6 +27,17 @@ export function verifyBody_OneUser(
       res,
       null,
       `invalid request ${fromZodError(verifyZod.error).message}`
+    );
+  }
+
+  const { userid } = req.query as QueryOneUserType;
+
+  if (!checkParsePositive(userid)) {
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid Query (userid should be a positive number)`
     );
   }
 
@@ -48,7 +59,7 @@ export async function verifyBody_UpdateUser(
   res: Response,
   next: NextFunction
 ) {
-  const verifyZod = zodBodyPostOneUser.safeParse(req.body);
+  const verifyZod = zodBodyUpdateUser.safeParse(req.body);
 
   if (!verifyZod.success) {
     console.log(req.body);

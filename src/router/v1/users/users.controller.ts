@@ -5,7 +5,7 @@ import { fromBuffer } from "file-type";
 //Request Body Type form Middleware
 import { TokenAuth } from "../../../middlewares/auth.middleware";
 import {
-  BodyPostOneUserType,
+  QueryOneUserType,
   BodyUpdateUser,
 } from "../../../middlewares/users.middleware";
 
@@ -24,7 +24,7 @@ import { responses } from "../../../utils/responses";
 
 export async function httpOneUser(req: Request, res: Response) {
   const tokenBody = (req as any).userData as TokenAuth;
-  const { userid, email } = req.body as BodyPostOneUserType;
+  const { userid, email } = req.query as QueryOneUserType;
 
   if (!verifyTokenAndUserData(tokenBody, email, userid)) {
     return responses.res403(
@@ -35,7 +35,7 @@ export async function httpOneUser(req: Request, res: Response) {
     );
   }
 
-  return await getOneUser(userid, email)
+  return await getOneUser(parseInt(userid), email)
     .then((result) => {
       return responses.res200(req, res, {
         result,

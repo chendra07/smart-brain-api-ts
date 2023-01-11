@@ -11,11 +11,11 @@ const requestChecker_1 = require("../../../utils/requestChecker");
 const responses_1 = require("../../../utils/responses");
 async function httpOneUser(req, res) {
     const tokenBody = req.userData;
-    const { userid, email } = req.body;
+    const { userid, email } = req.query;
     if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
         return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
     }
-    return await (0, users_model_1.getOneUser)(userid, email)
+    return await (0, users_model_1.getOneUser)(parseInt(userid), email)
         .then((result) => {
         return responses_1.responses.res200(req, res, {
             result,

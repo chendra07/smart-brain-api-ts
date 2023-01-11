@@ -1,22 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyBody_UpdateUser = exports.verifyBody_OneUser = void 0;
+exports.verifyBody_UpdateUser = exports.verifyQuery_OneUser = void 0;
 const zod_1 = require("zod");
 const zod_validation_error_1 = require("zod-validation-error");
 const responses_1 = require("../utils/responses");
+const requestChecker_1 = require("../utils/requestChecker");
 const base64Checker_1 = require("../utils/base64Checker");
-const zodBodyPostOneUser = zod_1.z.object({
-    userid: zod_1.z.number().positive(),
+const zodQueryOneUser = zod_1.z.object({
+    userid: zod_1.z.string(),
     email: zod_1.z.string().email(),
 });
-function verifyBody_OneUser(req, res, next) {
-    const verifyZod = zodBodyPostOneUser.safeParse(req.body);
+function verifyQuery_OneUser(req, res, next) {
+    const verifyZod = zodQueryOneUser.safeParse(req.query);
     if (!verifyZod.success) {
         return responses_1.responses.res400(req, res, null, `invalid request ${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message}`);
     }
+    const { userid } = req.query;
+    if (!(0, requestChecker_1.checkParsePositive)(userid)) {
+        return responses_1.responses.res400(req, res, null, `Invalid Query (userid should be a positive number)`);
+    }
     next();
 }
-exports.verifyBody_OneUser = verifyBody_OneUser;
+exports.verifyQuery_OneUser = verifyQuery_OneUser;
 const zodBodyUpdateUser = zod_1.z.object({
     email: zod_1.z.string().email(),
     userid: zod_1.z.number().positive(),
@@ -25,7 +30,7 @@ const zodBodyUpdateUser = zod_1.z.object({
     image64: zod_1.z.string().optional(),
 });
 async function verifyBody_UpdateUser(req, res, next) {
-    const verifyZod = zodBodyPostOneUser.safeParse(req.body);
+    const verifyZod = zodBodyUpdateUser.safeParse(req.body);
     if (!verifyZod.success) {
         console.log(req.body);
         console.log(verifyZod.success);
