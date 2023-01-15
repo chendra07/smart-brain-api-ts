@@ -72,15 +72,18 @@ export async function findUserHistory(
   skip: number,
   limit: number
 ) {
-  return HistoryTablePgModel.findAll({
+  return HistoryTablePgModel.findAndCountAll({
     where: { userid, isdeleted: false },
     offset: skip * limit,
     limit: limit,
     raw: true,
-  }).then((data: unknown) => {
-    console.log(data);
+  }).then((data) => {
+    console.log(data.rows);
 
-    return data as HistoryTableType[];
+    return {
+      total: data.count,
+      data: data.rows as unknown as HistoryTableType[],
+    };
   });
 }
 

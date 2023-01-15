@@ -17,9 +17,7 @@ async function httpOneUser(req, res) {
     }
     return await (0, users_model_1.getOneUser)(parseInt(userid), email)
         .then((result) => {
-        return responses_1.responses.res200(req, res, {
-            result,
-        });
+        return responses_1.responses.res200(req, res, result);
     })
         .catch((error) => {
         return responses_1.responses.res500(req, res, null, error.toString());

@@ -43,14 +43,17 @@ async function createHistoryEntry(data, t) {
 }
 exports.createHistoryEntry = createHistoryEntry;
 async function findUserHistory(userid, skip, limit) {
-    return exports.HistoryTablePgModel.findAll({
+    return exports.HistoryTablePgModel.findAndCountAll({
         where: { userid, isdeleted: false },
         offset: skip * limit,
         limit: limit,
         raw: true,
     }).then((data) => {
-        console.log(data);
-        return data;
+        console.log(data.rows);
+        return {
+            total: data.count,
+            data: data.rows,
+        };
     });
 }
 exports.findUserHistory = findUserHistory;
