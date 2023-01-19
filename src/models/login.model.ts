@@ -29,11 +29,6 @@ export const LoginTablePgModel = sequelizeCfg.define(
       allowNull: false,
       defaultValue: false,
     },
-    refresh_token: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-      defaultValue: false,
-    },
   },
   {
     timestamps: false,
@@ -48,14 +43,12 @@ export type LoginTableType = {
   email: string;
   loginid: number;
   hash: string;
-  refresh_token: string;
 };
 
 export type createLoginInput = {
   userid: number;
   email: string;
   hash: string;
-  refresh_token: string;
 };
 
 export async function createNewLogin(
@@ -85,7 +78,6 @@ export async function getOneLoginData(email: string) {
 //=========================================================================================
 
 type UpdateLoginInput = {
-  refresh_token?: string | null;
   isdeleted?: boolean;
   hash?: string;
 };

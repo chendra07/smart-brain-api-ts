@@ -1,14 +1,9 @@
 import { Request, Response } from "express";
 import { UploadedFile } from "express-fileupload";
-import jwt from "jsonwebtoken";
 
 //utils
 import { responses } from "../../../utils/responses";
 import { hashPassword, comparePassword } from "../../../utils/bcryptPassword";
-import {
-  signNewAccessToken,
-  signNewRefreshToken,
-} from "../../../utils/tokenJWT";
 import { verifyTokenAndUserData } from "../../../utils/requestChecker";
 
 //models
@@ -32,10 +27,8 @@ import {
 import {
   BodyRegisterType,
   BodyLoginType,
-  BodyRefreshTokenType,
   QueryLogoutType,
   BodyChangePassword,
-  TokenAuth,
 } from "../../../middlewares/auth.middleware";
 
 export async function httpPostRegister(req: Request, res: Response) {
@@ -48,23 +41,12 @@ export async function httpPostRegister(req: Request, res: Response) {
       //insert to user table
       const userData = await createNewUser(name, email, t);
 
-      //generate token
-      const accessToken = signNewAccessToken({
-        email,
-        userid: userData.userid!,
-      });
-      const refreshToken = signNewRefreshToken({
-        email,
-        userid: userData.userid!,
-      });
-
       //insert to login table
       await createNewLogin(
         {
           email: email,
           hash: hashPassword(password),
           userid: userData.userid!,
-          refresh_token: refreshToken,
         },
         t
       );
@@ -89,8 +71,6 @@ export async function httpPostRegister(req: Request, res: Response) {
         email: email,
         image: tempFileUrl,
         name: name,
-        accessToken,
-        refreshToken,
       });
     })
     .catch(async (error) => {
@@ -117,29 +97,6 @@ export async function httpPostLogin(req: Request, res: Response) {
     );
   }
 
-  //generate token
-  const accessToken = signNewAccessToken({
-    email: loginData.email,
-    userid: loginData.userid,
-  });
-  const refreshToken = signNewRefreshToken({
-    email: loginData.email,
-    userid: loginData.userid,
-  });
-
-  //insert refresh token to db [login]
-  sequelizeCfg
-    .transaction(async (t) => {
-      await updateLoginData(
-        { refresh_token: refreshToken },
-        loginData.email,
-        t
-      );
-    })
-    .catch((error) => {
-      return responses.res500(req, res, null, error.toString());
-    });
-
   //get user data
   const userData = await getOneUser(loginData.userid, email).then((result) => {
     const { userid, email, name, image } = result;
@@ -151,104 +108,18 @@ export async function httpPostLogin(req: Request, res: Response) {
     };
   });
 
-  return responses.res200(
-    req,
-    res,
-    {
-      ...userData,
-      accessToken,
-      refreshToken,
-    },
-    "user login successfully"
-  );
-}
-
-export async function httpRefreshToken(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
-  const { refreshToken, email, userid } = req.body as BodyRefreshTokenType;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
-
-  const userLoginData = await getOneLoginData(email);
-
-  if (!userLoginData) {
-    return responses.res404(req, res, null, "User not found");
-  }
-
-  if (!userLoginData.refresh_token) {
-    return responses.res404(req, res, null, "No session found, please login.");
-  }
-
-  if (refreshToken !== userLoginData.refresh_token) {
-    return responses.res403(req, res, null, "invalid refresh token");
-  }
-
-  jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET!,
-    (err: any, userData: any) => {
-      if (err) {
-        return responses.res403(
-          req,
-          res,
-          null,
-          "Token expired or invalid, please login again."
-        );
-      }
-
-      const accessToken = signNewAccessToken({
-        refreshed_token: true,
-        email,
-        userid,
-      });
-
-      return responses.res200(req, res, { accessToken }, "token refreshed");
-    }
-  );
+  return responses.res200(req, res, userData, "user login successfully");
 }
 
 export async function httpLogoutUser(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { email, userid } = req.query as QueryLogoutType;
+  req.session = null;
 
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
-
-  sequelizeCfg
-    .transaction(async (t) => {
-      await updateLoginData({ refresh_token: null }, email, t);
-      return responses.res200(req, res, null, "Logout successful");
-    })
-    .catch((error) => {
-      return responses.res500(req, res, null, error.toString());
-    });
+  return responses.res200(req, res, null, "session deleted");
 }
 
 export async function httpDeleteUser(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { email, userid } = req.query as QueryLogoutType;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   sequelizeCfg
     .transaction(async (t) => {
@@ -264,18 +135,8 @@ export async function httpDeleteUser(req: Request, res: Response) {
 }
 
 export async function httpChangePassword(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { email, userid, newPassword, oldPassword } =
     req.body as BodyChangePassword;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   const loginData = await getOneLoginData(email);
 
@@ -289,11 +150,7 @@ export async function httpChangePassword(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await updateLoginData(
-        { hash: hashNewPass, refresh_token: null },
-        email,
-        t
-      );
+      await updateLoginData({ hash: hashNewPass }, email, t);
     })
     .catch((error) => {
       return responses.res500(req, res, null, "Unable to update password");

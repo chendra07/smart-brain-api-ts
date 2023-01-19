@@ -17,27 +17,15 @@ import {
   QueryDeleteHistory,
 } from "../../../middlewares/image.middleware";
 
-import { TokenAuth } from "../../../middlewares/auth.middleware";
-
 //utils
 import { verifyTokenAndUserData } from "../../../utils/requestChecker";
 
 const { CLARIFAI_USER_ID, CLARIFAI_APP_ID, CLARIFAI_API_KEY } = process.env;
 
 export async function detectFaceAI(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { imageUrl, email, userid } = req.body as BodyDetectFace;
 
   const MODEL_ID = "face-detection";
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   const body = {
     user_app_id: {
@@ -93,17 +81,7 @@ export async function detectFaceAI(req: Request, res: Response) {
 }
 
 export async function viewUserHistory(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { email, userid, limit, skip } = req.body as BodyViewUserHistory;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   const userHistory = await findUserHistory(userid, skip, limit);
 
@@ -111,17 +89,7 @@ export async function viewUserHistory(req: Request, res: Response) {
 }
 
 export async function deleteHistory(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { email, userid, historyid } = req.query as QueryDeleteHistory;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   sequelizeCfg
     .transaction(async (t) => {

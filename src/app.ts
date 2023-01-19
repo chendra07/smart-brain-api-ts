@@ -4,15 +4,20 @@ import fileUpload from "express-fileupload";
 import cors from "cors";
 import morgan from "morgan";
 import dotenv from "dotenv";
+import cookieSession from "cookie-session";
+import Keygrip from "keygrip";
 
 import { indexRouter } from "./router";
 
 export const app = express();
+app.use(helmet()); //securing HTTP headers
 
-const { ACCEPTED_URL, EXP_SESSION_SECRET } = process.env;
+const { ACCEPTED_URL, COOKIE_SESSION_KEY } = process.env;
+
+dotenv.config();
 
 // const whitelist = ACCEPTED_URL!.split(", ");
-
+app.use(cors());
 // app.use(
 //   cors({
 //     origin: (origin, callback) => {
@@ -25,11 +30,18 @@ const { ACCEPTED_URL, EXP_SESSION_SECRET } = process.env;
 //     methods: ["GET", "POST", "PUT", "DELETE"],
 //   })
 // );
-dotenv.config();
-app.use(cors());
+
+const sessionKeys = COOKIE_SESSION_KEY!.split(", ");
+const keys = new Keygrip(sessionKeys, "sha256", "hex");
+app.use(
+  cookieSession({
+    name: "session",
+    maxAge: 60 * 1000,
+    keys: keys,
+  })
+);
 
 app.use(morgan("combined")); //http request logger
-app.use(helmet()); //securing HTTP headers
 app.use(fileUpload());
 app.use(express.json());
 

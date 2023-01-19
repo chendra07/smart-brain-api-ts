@@ -3,7 +3,6 @@ import { UploadedFile } from "express-fileupload";
 import { fromBuffer } from "file-type";
 
 //Request Body Type form Middleware
-import { TokenAuth } from "../../../middlewares/auth.middleware";
 import {
   QueryOneUserType,
   BodyUpdateUser,
@@ -23,17 +22,7 @@ import { BodyDummy } from "../../../middlewares/image.middleware";
 import { responses } from "../../../utils/responses";
 
 export async function httpOneUser(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { userid, email } = req.query as QueryOneUserType;
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   return await getOneUser(parseInt(userid), email)
     .then((result) => {
@@ -45,7 +34,6 @@ export async function httpOneUser(req: Request, res: Response) {
 }
 
 export async function httpUpdateUser(req: Request, res: Response) {
-  const tokenBody = (req as any).userData as TokenAuth;
   const { userid, email, newName, deleteImage, image64 } =
     req.body as BodyUpdateUser;
   let tempUrl: string | null | undefined;
@@ -57,15 +45,6 @@ export async function httpUpdateUser(req: Request, res: Response) {
   // 4: user want to update name & but don't want to delete the image (ok)
   // 5: user don't want to update name, but update image (ok)
   // 6: user don't want to update name, but delete image (ok)
-
-  if (!verifyTokenAndUserData(tokenBody, email, userid)) {
-    return responses.res403(
-      req,
-      res,
-      null,
-      "User is unauthorized to access this resource"
-    );
-  }
 
   //get user data
   const userData = await getOneUser(userid, email);
@@ -109,20 +88,4 @@ export async function httpUpdateUser(req: Request, res: Response) {
         `Failed to update user data (${error})`
       );
     });
-}
-
-export async function httpDummyReq(req: Request, res: Response) {
-  const { image64 } = req.body as BodyDummy;
-
-  const x = Buffer.from(image64, "base64");
-  const y = Buffer.from("nothing here...", "base64");
-  const result = await fromBuffer(x);
-  const resulty = await fromBuffer(y);
-
-  console.log(y);
-  console.log(resulty);
-  console.log("========================");
-  console.log(Buffer.byteLength(x));
-
-  return responses.res200(req, res, null);
 }

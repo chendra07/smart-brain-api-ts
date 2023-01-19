@@ -4,7 +4,6 @@ import { Request, Response } from "express";
 function res200(req: Request, res: Response, body: any, message?: string) {
   return res.status(200).json({
     message: message ?? "OK",
-    statusCode: 200,
     data: body,
   });
 }
@@ -13,7 +12,6 @@ function res200(req: Request, res: Response, body: any, message?: string) {
 function res201(req: Request, res: Response, body: any, message?: string) {
   return res.status(201).json({
     message: message ?? "Created",
-    statusCode: 201,
     data: body,
   });
 }
@@ -22,7 +20,6 @@ function res201(req: Request, res: Response, body: any, message?: string) {
 function res400(req: Request, res: Response, body: any, message?: string) {
   return res.status(400).json({
     message: message ?? "Bad Request",
-    statusCode: 400,
     data: body,
   });
 }
@@ -31,7 +28,6 @@ function res400(req: Request, res: Response, body: any, message?: string) {
 function res401(req: Request, res: Response, body: any, message?: string) {
   return res.status(401).json({
     message: message ?? "Unauthorized",
-    statusCode: 401,
     data: body,
   });
 }
@@ -40,7 +36,6 @@ function res401(req: Request, res: Response, body: any, message?: string) {
 function res403(req: Request, res: Response, body: any, message?: string) {
   return res.status(403).json({
     message: message ?? "Forbidden",
-    statusCode: 403,
     data: body,
   });
 }
@@ -49,7 +44,6 @@ function res403(req: Request, res: Response, body: any, message?: string) {
 function res404(req: Request, res: Response, body: any, message?: string) {
   return res.status(404).json({
     message: message ?? "Not Found",
-    statusCode: 404,
     data: body,
   });
 }
@@ -58,7 +52,6 @@ function res404(req: Request, res: Response, body: any, message?: string) {
 function res405(req: Request, res: Response, body: any, message?: string) {
   return res.status(405).json({
     message: message ?? "Method Not Allowed",
-    statusCode: 405,
     data: body,
   });
 }
@@ -67,7 +60,6 @@ function res405(req: Request, res: Response, body: any, message?: string) {
 function res408(req: Request, res: Response, body: any, message?: string) {
   return res.status(408).json({
     message: message ?? "Request Timeout",
-    statusCode: 408,
     data: body,
   });
 }
@@ -76,7 +68,6 @@ function res408(req: Request, res: Response, body: any, message?: string) {
 function res409(req: Request, res: Response, body: any, message?: string) {
   return res.status(409).json({
     message: message ?? "Conflict",
-    statusCode: 409,
     data: body,
   });
 }
@@ -85,7 +76,6 @@ function res409(req: Request, res: Response, body: any, message?: string) {
 function res429(req: Request, res: Response, body: any, message?: string) {
   return res.status(429).json({
     message: message ?? "Too Many Request",
-    statusCode: 429,
     data: body,
   });
 }
@@ -94,7 +84,6 @@ function res429(req: Request, res: Response, body: any, message?: string) {
 function res440(req: Request, res: Response, body: any, message?: string) {
   return res.status(440).json({
     message: message ?? "Login Time-out",
-    statusCode: 440,
     data: body,
   });
 }
@@ -103,7 +92,6 @@ function res440(req: Request, res: Response, body: any, message?: string) {
 function res500(req: Request, res: Response, body: any, message?: string) {
   return res.status(500).json({
     message: message ?? "Internal Server Error",
-    statusCode: 500,
     data: body,
   });
 }
@@ -112,7 +100,6 @@ function res500(req: Request, res: Response, body: any, message?: string) {
 function res502(req: Request, res: Response, body: any, message?: string) {
   return res.status(502).json({
     message: message ?? "Bad Gateway",
-    statusCode: 502,
     data: body,
   });
 }
@@ -121,7 +108,6 @@ function res502(req: Request, res: Response, body: any, message?: string) {
 function res511(req: Request, res: Response, body: any, message?: string) {
   return res.status(511).json({
     message: message ?? "Network Authentication Required",
-    statusCode: 511,
     data: body,
   });
 }
