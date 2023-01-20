@@ -7,46 +7,9 @@ import { responses } from "../utils/responses";
 import { checkParsePositive } from "../utils/requestChecker";
 import { base64ImgCheck } from "../utils/base64Checker";
 
-const zodQueryOneUser = z.object({
-  userid: z.string(),
-  email: z.string().email(),
-});
-
-export type QueryOneUserType = z.infer<typeof zodQueryOneUser>;
-
-export function verifyQuery_OneUser(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const verifyZod = zodQueryOneUser.safeParse(req.query);
-
-  if (!verifyZod.success) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `invalid request ${fromZodError(verifyZod.error).message}`
-    );
-  }
-
-  const { userid } = req.query as QueryOneUserType;
-
-  if (!checkParsePositive(userid)) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `Invalid Query (userid should be a positive number)`
-    );
-  }
-
-  next();
-}
+//===================================================================================
 
 const zodBodyUpdateUser = z.object({
-  email: z.string().email(),
-  userid: z.number().positive(),
   newName: z.string(),
   deleteImage: z.boolean(),
   image64: z.string().optional(),

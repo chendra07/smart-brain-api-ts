@@ -1,6 +1,4 @@
-import { TokenAuth } from "../middlewares/auth.middleware";
-
-export function checkParsePositive(target: string): boolean {
+export function checkParsePositive(target: string) {
   const parsed = parseInt(target);
   if (Number.isNaN(parsed) || parsed < 0) {
     return false;
@@ -9,25 +7,13 @@ export function checkParsePositive(target: string): boolean {
   return true;
 }
 
-export function verifyTokenAndUserData(
-  tokenBody: TokenAuth,
-  email: string,
-  userid: number | string
-) {
-  let verification = true;
-  let id = userid;
+export function checkStringOfNumber(target: string) {
+  let valid = true;
 
-  if (typeof id === "string") {
-    id = parseInt(id);
+  //only accept string like this: "1,2,3,4"
+  if (!target.match(/^[0-9,]+$/)) {
+    valid = false;
   }
 
-  if (tokenBody.email !== email) {
-    verification = false;
-  }
-
-  if (tokenBody.userid !== id) {
-    verification = false;
-  }
-
-  return verification;
+  return valid;
 }

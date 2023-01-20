@@ -35,8 +35,6 @@ const requestChecker_1 = require("../utils/requestChecker");
 //===================================================
 const zodBodyDetectFace = zod_1.z.object({
     imageUrl: zod_1.z.string().url(),
-    userid: zod_1.z.number().positive(),
-    email: zod_1.z.string().email(),
 });
 function verifyBody_detectFace(req, res, next) {
     const verifyZod = zodBodyDetectFace.safeParse(req.body);
@@ -48,8 +46,6 @@ function verifyBody_detectFace(req, res, next) {
 exports.verifyBody_detectFace = verifyBody_detectFace;
 //===================================================
 const zodBodyViewUserHistory = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.number().positive(),
     skip: zod_1.z.number().gte(0),
     limit: zod_1.z.number().positive(),
 });
@@ -63,8 +59,6 @@ function verifyBody_ViewUserHistory(req, res, next) {
 exports.verifyBody_ViewUserHistory = verifyBody_ViewUserHistory;
 //===================================================
 const zodQueryDeleteHistory = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.string(),
     historyid: zod_1.z.string(),
 });
 function verifyQuery_DeleteHistory(req, res, next) {
@@ -73,16 +67,9 @@ function verifyQuery_DeleteHistory(req, res, next) {
         return responses_1.responses.res400(req, res, null, `Invalid Query (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
     const query = req.query;
-    if (!(0, requestChecker_1.checkParsePositive)(query.userid)) {
-        return responses_1.responses.res400(req, res, null, "userid should be number and positive value");
-    }
-    if (!(0, requestChecker_1.checkParsePositive)(query.historyid)) {
-        return responses_1.responses.res400(req, res, null, "historyid should be number and positive value");
+    if (!(0, requestChecker_1.checkStringOfNumber)(query.historyid)) {
+        return responses_1.responses.res400(req, res, null, `Invalid Query (please check your query again)`);
     }
     next();
 }
 exports.verifyQuery_DeleteHistory = verifyQuery_DeleteHistory;
-//===================================================
-const zodBodyDummy = zod_1.z.object({
-    image64: zod_1.z.string(),
-});

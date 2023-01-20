@@ -62,9 +62,9 @@ async function createNewUser(name, email, t) {
     });
 }
 exports.createNewUser = createNewUser;
-async function updateUserData(data, email, t) {
+async function updateUserData(data, email, userid, t) {
     return await exports.UsersTablePgModel.update(data, {
-        where: { email, isdeleted: false },
+        where: { email, userid, isdeleted: false },
         transaction: t,
     })
         .then((result) => {

@@ -9,9 +9,8 @@ import {
 import {
   verifyBody_Register,
   verifyBody_Login,
-  verifyQuery_Logout,
-  verifyQuery_DeleteUser,
   verifyBody_ChangePassword,
+  verifySession,
 } from "../../../middlewares/auth.middleware";
 
 export const authRouter = express.Router();
@@ -20,12 +19,13 @@ authRouter.post("/register", verifyBody_Register, httpPostRegister);
 
 authRouter.post("/login", verifyBody_Login, httpPostLogin);
 
-authRouter.delete("/logout", verifyQuery_Logout, httpLogoutUser);
+authRouter.delete("/logout", verifySession, httpLogoutUser);
 
-authRouter.delete("/deleteuser", verifyQuery_DeleteUser, httpDeleteUser);
+authRouter.delete("/deleteuser", verifySession, httpDeleteUser);
 
 authRouter.put(
   "/changepassword",
+  verifySession,
   verifyBody_ChangePassword,
   httpChangePassword
 );

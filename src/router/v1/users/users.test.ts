@@ -27,8 +27,6 @@ describe("Users API", () => {
     email: z.string().email(),
     name: z.string(),
     image: z.string().url().nullable(),
-    accessToken: z.string(),
-    refreshToken: z.string(),
   });
 
   type UserDataSchema = z.infer<typeof zodUserDataSchema>;

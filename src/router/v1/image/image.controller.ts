@@ -16,14 +16,13 @@ import {
   BodyViewUserHistory,
   QueryDeleteHistory,
 } from "../../../middlewares/image.middleware";
-
-//utils
-import { verifyTokenAndUserData } from "../../../utils/requestChecker";
+import { SessionType } from "../../../middlewares/auth.middleware";
 
 const { CLARIFAI_USER_ID, CLARIFAI_APP_ID, CLARIFAI_API_KEY } = process.env;
 
 export async function detectFaceAI(req: Request, res: Response) {
-  const { imageUrl, email, userid } = req.body as BodyDetectFace;
+  const { userid } = req.session!.user as SessionType;
+  const { imageUrl } = req.body as BodyDetectFace;
 
   const MODEL_ID = "face-detection";
 
@@ -81,7 +80,8 @@ export async function detectFaceAI(req: Request, res: Response) {
 }
 
 export async function viewUserHistory(req: Request, res: Response) {
-  const { email, userid, limit, skip } = req.body as BodyViewUserHistory;
+  const { userid } = req.session!.user as SessionType;
+  const { limit, skip } = req.body as BodyViewUserHistory;
 
   const userHistory = await findUserHistory(userid, skip, limit);
 
@@ -89,11 +89,14 @@ export async function viewUserHistory(req: Request, res: Response) {
 }
 
 export async function deleteHistory(req: Request, res: Response) {
-  const { email, userid, historyid } = req.query as QueryDeleteHistory;
+  const { userid } = req.session!.user as SessionType;
+  const { historyid } = req.query as QueryDeleteHistory;
+
+  const listOfHistoryid = historyid.split(",").map((id) => Number(id));
 
   sequelizeCfg
     .transaction(async (t) => {
-      await deleteUserHistory(parseInt(historyid), parseInt(userid), t);
+      await deleteUserHistory(listOfHistoryid, userid, t);
 
       return responses.res200(req, res, null, "History deleted");
     })

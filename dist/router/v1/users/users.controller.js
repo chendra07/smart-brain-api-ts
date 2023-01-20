@@ -1,21 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.httpDummyReq = exports.httpUpdateUser = exports.httpOneUser = void 0;
-const file_type_1 = require("file-type");
+exports.httpUpdateUser = exports.httpOneUser = void 0;
 //models
 const cloudinary_model_1 = require("../../../models/cloudinary.model");
 const users_model_1 = require("../../../models/users.model");
 const postgresDB_1 = require("../../../models/postgresDB");
 //utils
-const requestChecker_1 = require("../../../utils/requestChecker");
 const responses_1 = require("../../../utils/responses");
 async function httpOneUser(req, res) {
-    const tokenBody = req.userData;
-    const { userid, email } = req.query;
-    if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
-    }
-    return await (0, users_model_1.getOneUser)(parseInt(userid), email)
+    const { email, userid } = req.session.user;
+    return await (0, users_model_1.getOneUser)(userid, email)
         .then((result) => {
         return responses_1.responses.res200(req, res, result);
     })
@@ -25,8 +19,8 @@ async function httpOneUser(req, res) {
 }
 exports.httpOneUser = httpOneUser;
 async function httpUpdateUser(req, res) {
-    const tokenBody = req.userData;
-    const { userid, email, newName, deleteImage, image64 } = req.body;
+    const { userid, email } = req.session.user;
+    const { newName, deleteImage, image64 } = req.body;
     let tempUrl;
     // 6 scenarios:
     // 1: user want to update name & update image (ok)
@@ -35,9 +29,6 @@ async function httpUpdateUser(req, res) {
     // 4: user want to update name & but don't want to delete the image (ok)
     // 5: user don't want to update name, but update image (ok)
     // 6: user don't want to update name, but delete image (ok)
-    if (!(0, requestChecker_1.verifyTokenAndUserData)(tokenBody, email, userid)) {
-        return responses_1.responses.res403(req, res, null, "User is unauthorized to access this resource");
-    }
     //get user data
     const userData = await (0, users_model_1.getOneUser)(userid, email);
     //if delete image is true & user data have image uploaded, delete image from cloudinary
@@ -59,7 +50,7 @@ async function httpUpdateUser(req, res) {
             }
         }
         //update new data to db users
-        await (0, users_model_1.updateUserData)({ image: tempUrl, name: newName }, email, t);
+        await (0, users_model_1.updateUserData)({ image: tempUrl, name: newName }, email, userid, t);
         return responses_1.responses.res200(req, res, { image: tempUrl, name: newName }, "user data updated successfully");
     })
         .catch((error) => {
@@ -67,16 +58,3 @@ async function httpUpdateUser(req, res) {
     });
 }
 exports.httpUpdateUser = httpUpdateUser;
-async function httpDummyReq(req, res) {
-    const { image64 } = req.body;
-    const x = Buffer.from(image64, "base64");
-    const y = Buffer.from("nothing here...", "base64");
-    const result = await (0, file_type_1.fromBuffer)(x);
-    const resulty = await (0, file_type_1.fromBuffer)(y);
-    console.log(y);
-    console.log(resulty);
-    console.log("========================");
-    console.log(Buffer.byteLength(x));
-    return responses_1.responses.res200(req, res, null);
-}
-exports.httpDummyReq = httpDummyReq;

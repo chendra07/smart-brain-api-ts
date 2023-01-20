@@ -88,7 +88,7 @@ export async function findUserHistory(
 }
 
 export async function deleteUserHistory(
-  historyid: number,
+  historyid: number[],
   userid: number,
   t: Transaction | null
 ) {

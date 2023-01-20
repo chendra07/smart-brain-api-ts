@@ -3,10 +3,7 @@ import { UploadedFile } from "express-fileupload";
 import { fromBuffer } from "file-type";
 
 //Request Body Type form Middleware
-import {
-  QueryOneUserType,
-  BodyUpdateUser,
-} from "../../../middlewares/users.middleware";
+import { BodyUpdateUser } from "../../../middlewares/users.middleware";
 
 //models
 import {
@@ -17,14 +14,13 @@ import { getOneUser, updateUserData } from "../../../models/users.model";
 import { sequelizeCfg } from "../../../models/postgresDB";
 
 //utils
-import { verifyTokenAndUserData } from "../../../utils/requestChecker";
-import { BodyDummy } from "../../../middlewares/image.middleware";
 import { responses } from "../../../utils/responses";
+import { SessionType } from "../../../middlewares/auth.middleware";
 
 export async function httpOneUser(req: Request, res: Response) {
-  const { userid, email } = req.query as QueryOneUserType;
+  const { email, userid } = req.session!.user as SessionType;
 
-  return await getOneUser(parseInt(userid), email)
+  return await getOneUser(userid, email)
     .then((result) => {
       return responses.res200(req, res, result);
     })
@@ -34,8 +30,8 @@ export async function httpOneUser(req: Request, res: Response) {
 }
 
 export async function httpUpdateUser(req: Request, res: Response) {
-  const { userid, email, newName, deleteImage, image64 } =
-    req.body as BodyUpdateUser;
+  const { userid, email } = req.session!.user as SessionType;
+  const { newName, deleteImage, image64 } = req.body as BodyUpdateUser;
   let tempUrl: string | null | undefined;
 
   // 6 scenarios:
@@ -71,7 +67,7 @@ export async function httpUpdateUser(req: Request, res: Response) {
       }
 
       //update new data to db users
-      await updateUserData({ image: tempUrl, name: newName }, email, t);
+      await updateUserData({ image: tempUrl, name: newName }, email, userid, t);
 
       return responses.res200(
         req,

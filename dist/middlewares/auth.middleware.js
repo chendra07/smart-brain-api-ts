@@ -1,37 +1,28 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyBody_ChangePassword = exports.verifyQuery_DeleteUser = exports.verifyQuery_Logout = exports.verifyBody_RefreshToken = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifyToken = void 0;
-const dotenv_1 = __importDefault(require("dotenv"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+exports.verifyBody_ChangePassword = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifySession = void 0;
 const zod_1 = require("zod");
 const zod_validation_error_1 = require("zod-validation-error");
 const responses_1 = require("../utils/responses");
 const passwordValidator_1 = require("../utils/passwordValidator");
-const requestChecker_1 = require("../utils/requestChecker");
 const base64Checker_1 = require("../utils/base64Checker");
-dotenv_1.default.config();
-const { JWT_ACCESS_SECRET } = process.env;
-function verifyToken(req, res, next) {
-    const authHeader = req.headers.authorization;
-    //if token exist, split the "bearer" and the token
-    const token = authHeader && authHeader.split(" ")[1];
-    if (!token) {
-        return responses_1.responses.res401(req, res, null, "No token detected, please login or register first");
+const zodSessionType = zod_1.z.object({
+    email: zod_1.z.string().max(100).email({ message: "invalid email format" }),
+    userid: zod_1.z.number().positive(),
+});
+function verifySession(req, res, next) {
+    if (!req.session?.user) {
+        return responses_1.responses.res401(req, res, null);
     }
-    //verify the token
-    jsonwebtoken_1.default.verify(token, JWT_ACCESS_SECRET, (err, userData) => {
-        if (err) {
-            return responses_1.responses.res403(req, res, null, "Token expire or invalid, try to refresh token or login");
-        }
-        //store decoded token body to userData
-        req.userData = userData;
-        next();
-    });
+    console.log(req.session.user);
+    const verifyZod = zodSessionType.safeParse(req.session.user);
+    if (!verifyZod.success) {
+        console.log((0, zod_validation_error_1.fromZodError)(verifyZod.error));
+        return responses_1.responses.res400(req, res, null, `Invalid session please login again`);
+    }
+    next();
 }
-exports.verifyToken = verifyToken;
+exports.verifySession = verifySession;
 //==========================================================================
 const zodBodyLogin = zod_1.z.object({
     email: zod_1.z.string().max(100).email({ message: "invalid email format" }),
@@ -79,60 +70,7 @@ async function verifyBody_Register(req, res, next) {
 }
 exports.verifyBody_Register = verifyBody_Register;
 //==========================================================================
-const zodBodyRefreshToken = zod_1.z.object({
-    refreshToken: zod_1.z.string(),
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.number().positive(),
-});
-function verifyBody_RefreshToken(req, res, next) {
-    const verifyZod = zodBodyRefreshToken.safeParse(req.body);
-    if (!verifyZod.success) {
-        return responses_1.responses.res400(req, res, null, `invalid body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
-    }
-    const { refreshToken } = req.body;
-    const userData = jsonwebtoken_1.default.decode(refreshToken);
-    req.userData = userData;
-    next();
-}
-exports.verifyBody_RefreshToken = verifyBody_RefreshToken;
-//==========================================================================
-const zodQueryLogout = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.string(),
-});
-function verifyQuery_Logout(req, res, next) {
-    const verifyZod = zodQueryLogout.safeParse(req.query);
-    if (!verifyZod.success) {
-        return responses_1.responses.res400(req, res, null, `Invalid Query (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
-    }
-    const logoutQuery = req.query;
-    if (!(0, requestChecker_1.checkParsePositive)(logoutQuery.userid)) {
-        return responses_1.responses.res400(req, res, null, `Invalid Query (userid should be a positive number)`);
-    }
-    next();
-}
-exports.verifyQuery_Logout = verifyQuery_Logout;
-//==========================================================================
-const zodQueryDeleteUser = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.string(),
-});
-function verifyQuery_DeleteUser(req, res, next) {
-    const verifyZod = zodQueryDeleteUser.safeParse(req.query);
-    if (!verifyZod.success) {
-        return responses_1.responses.res400(req, res, null, `Invalid Query (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
-    }
-    const logoutQuery = req.query;
-    if (!(0, requestChecker_1.checkParsePositive)(logoutQuery.userid)) {
-        return responses_1.responses.res400(req, res, null, `Invalid Query (userid should be a positive number)`);
-    }
-    next();
-}
-exports.verifyQuery_DeleteUser = verifyQuery_DeleteUser;
-//==========================================================================
 const zodBodyChangePassword = zod_1.z.object({
-    email: zod_1.z.string().email(),
-    userid: zod_1.z.number().positive(),
     oldPassword: zod_1.z.string(),
     newPassword: zod_1.z.string(),
 });

@@ -1,10 +1,8 @@
 import { Request, Response } from "express";
-import { UploadedFile } from "express-fileupload";
 
 //utils
 import { responses } from "../../../utils/responses";
 import { hashPassword, comparePassword } from "../../../utils/bcryptPassword";
-import { verifyTokenAndUserData } from "../../../utils/requestChecker";
 
 //models
 import { sequelizeCfg } from "../../../models/postgresDB";
@@ -27,8 +25,8 @@ import {
 import {
   BodyRegisterType,
   BodyLoginType,
-  QueryLogoutType,
   BodyChangePassword,
+  SessionType,
 } from "../../../middlewares/auth.middleware";
 
 export async function httpPostRegister(req: Request, res: Response) {
@@ -64,7 +62,17 @@ export async function httpPostRegister(req: Request, res: Response) {
       }
 
       //update image field
-      await updateUserData({ name: name, image: tempFileUrl }, email, t);
+      await updateUserData(
+        { name: name, image: tempFileUrl },
+        email,
+        userData.userid,
+        t
+      );
+
+      req.session!.user = {
+        userid: userData.userid,
+        email: email,
+      };
 
       return responses.res201(req, res, {
         userid: userData.userid,
@@ -100,6 +108,12 @@ export async function httpPostLogin(req: Request, res: Response) {
   //get user data
   const userData = await getOneUser(loginData.userid, email).then((result) => {
     const { userid, email, name, image } = result;
+
+    req.session!.user = {
+      userid,
+      email,
+    };
+
     return {
       userid,
       email,
@@ -112,20 +126,22 @@ export async function httpPostLogin(req: Request, res: Response) {
 }
 
 export async function httpLogoutUser(req: Request, res: Response) {
-  const { email, userid } = req.query as QueryLogoutType;
+  //delete user's session
   req.session = null;
 
   return responses.res200(req, res, null, "session deleted");
 }
 
 export async function httpDeleteUser(req: Request, res: Response) {
-  const { email, userid } = req.query as QueryLogoutType;
+  const { email, userid } = req.session!.user as SessionType;
 
   sequelizeCfg
     .transaction(async (t) => {
       //performing soft delete actions in Logins & Users table:
-      await updateLoginData({ isdeleted: true }, email, t);
-      await updateUserData({ isdeleted: true }, email, t);
+      await updateLoginData({ isdeleted: true }, email, userid, t);
+      await updateUserData({ isdeleted: true }, email, userid, t);
+
+      req.session!.user = null;
 
       return responses.res200(req, res, null, "User deleted successfully");
     })
@@ -135,8 +151,9 @@ export async function httpDeleteUser(req: Request, res: Response) {
 }
 
 export async function httpChangePassword(req: Request, res: Response) {
-  const { email, userid, newPassword, oldPassword } =
-    req.body as BodyChangePassword;
+  const { email, userid } = req.session!.user as SessionType;
+
+  const { newPassword, oldPassword } = req.body as BodyChangePassword;
 
   const loginData = await getOneLoginData(email);
 
@@ -150,16 +167,18 @@ export async function httpChangePassword(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await updateLoginData({ hash: hashNewPass }, email, t);
+      await updateLoginData({ hash: hashNewPass }, email, userid, t);
+
+      req.session!.user = null;
+
+      return responses.res200(
+        req,
+        res,
+        null,
+        "password successfully updated, please login again"
+      );
     })
     .catch((error) => {
       return responses.res500(req, res, null, "Unable to update password");
     });
-
-  return responses.res200(
-    req,
-    res,
-    null,
-    "password successfully updated, please login again"
-  );
 }

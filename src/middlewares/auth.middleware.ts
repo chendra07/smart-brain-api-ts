@@ -1,14 +1,9 @@
 import { Request, Response, NextFunction } from "express";
-import dotenv from "dotenv";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
 import { passwordValidator } from "../utils/passwordValidator";
-import { checkParsePositive } from "../utils/requestChecker";
 import { base64ImgCheck } from "../utils/base64Checker";
-
-dotenv.config();
-const { JWT_ACCESS_SECRET } = process.env;
 
 const zodSessionType = z.object({
   email: z.string().max(100).email({ message: "invalid email format" }),
@@ -18,14 +13,23 @@ const zodSessionType = z.object({
 export type SessionType = z.infer<typeof zodSessionType>;
 
 export function verifySession(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.UserData) {
+  if (!req.session?.user) {
     return responses.res401(req, res, null);
   }
 
-  const verifyZod = zodBodyLogin.safeParse(req.session.userData);
+  console.log(req.session.user);
+
+  const verifyZod = zodSessionType.safeParse(req.session.user);
 
   if (!verifyZod.success) {
-    return responses.res400(req, res, null, `Invalid session`);
+    console.log(fromZodError(verifyZod.error));
+
+    return responses.res400(
+      req,
+      res,
+      null,
+      `Invalid session please login again`
+    );
   }
 
   next();
@@ -129,87 +133,7 @@ export async function verifyBody_Register(
 
 //==========================================================================
 
-const zodQueryLogout = z.object({
-  email: z.string().email(),
-  userid: z.string(),
-});
-
-export type QueryLogoutType = z.infer<typeof zodQueryLogout>;
-
-export function verifyQuery_Logout(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const verifyZod = zodQueryLogout.safeParse(req.query);
-
-  if (!verifyZod.success) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `Invalid Query (${fromZodError(verifyZod.error).message})`
-    );
-  }
-
-  const logoutQuery = req.query as unknown as QueryLogoutType;
-
-  if (!checkParsePositive(logoutQuery.userid)) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `Invalid Query (userid should be a positive number)`
-    );
-  }
-
-  next();
-}
-
-//==========================================================================
-
-const zodQueryDeleteUser = z.object({
-  email: z.string().email(),
-  userid: z.string(),
-});
-
-export type QueryDeleteUserType = z.infer<typeof zodQueryLogout>;
-
-export function verifyQuery_DeleteUser(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  const verifyZod = zodQueryDeleteUser.safeParse(req.query);
-
-  if (!verifyZod.success) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `Invalid Query (${fromZodError(verifyZod.error).message})`
-    );
-  }
-
-  const logoutQuery = req.query as unknown as QueryDeleteUserType;
-
-  if (!checkParsePositive(logoutQuery.userid)) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      `Invalid Query (userid should be a positive number)`
-    );
-  }
-
-  next();
-}
-
-//==========================================================================
-
 const zodBodyChangePassword = z.object({
-  email: z.string().email(),
-  userid: z.number().positive(),
   oldPassword: z.string(),
   newPassword: z.string(),
 });

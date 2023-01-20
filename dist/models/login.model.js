@@ -27,11 +27,6 @@ exports.LoginTablePgModel = postgresDB_1.sequelizeCfg.define("login", {
         allowNull: false,
         defaultValue: false,
     },
-    refresh_token: {
-        type: sequelize_1.DataTypes.TEXT,
-        allowNull: true,
-        defaultValue: false,
-    },
 }, {
     timestamps: false,
 });
@@ -54,9 +49,9 @@ async function getOneLoginData(email) {
     });
 }
 exports.getOneLoginData = getOneLoginData;
-async function updateLoginData(data, email, t) {
+async function updateLoginData(data, email, userid, t) {
     return await exports.LoginTablePgModel.update(data, {
-        where: { email, isdeleted: false },
+        where: { email, userid, isdeleted: false },
         transaction: t,
     })
         .then((result) => {

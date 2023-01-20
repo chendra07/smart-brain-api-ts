@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
+import dotenv from "dotenv";
 import cloudinary from "cloudinary";
 
 import { fromBuffer } from "file-type";
 
+dotenv.config();
 const { CLD_NAME, CLD_API_KEY, CLD_API_SECRET } = process.env;
 
 const cloudinaryV2 = cloudinary.v2;

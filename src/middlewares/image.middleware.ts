@@ -3,7 +3,7 @@ import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 import { responses } from "../utils/responses";
-import { checkParsePositive } from "../utils/requestChecker";
+import { checkStringOfNumber } from "../utils/requestChecker";
 
 // export function verifyFiles_UploadImage(
 //   req: Request,
@@ -41,8 +41,6 @@ import { checkParsePositive } from "../utils/requestChecker";
 
 const zodBodyDetectFace = z.object({
   imageUrl: z.string().url(),
-  userid: z.number().positive(),
-  email: z.string().email(),
 });
 
 export type BodyDetectFace = z.infer<typeof zodBodyDetectFace>;
@@ -69,8 +67,6 @@ export function verifyBody_detectFace(
 //===================================================
 
 const zodBodyViewUserHistory = z.object({
-  email: z.string().email(),
-  userid: z.number().positive(),
   skip: z.number().gte(0),
   limit: z.number().positive(),
 });
@@ -99,8 +95,6 @@ export function verifyBody_ViewUserHistory(
 //===================================================
 
 const zodQueryDeleteHistory = z.object({
-  email: z.string().email(),
-  userid: z.string(),
   historyid: z.string(),
 });
 
@@ -124,31 +118,14 @@ export function verifyQuery_DeleteHistory(
 
   const query = req.query as QueryDeleteHistory;
 
-  if (!checkParsePositive(query.userid)) {
+  if (!checkStringOfNumber(query.historyid)) {
     return responses.res400(
       req,
       res,
       null,
-      "userid should be number and positive value"
-    );
-  }
-
-  if (!checkParsePositive(query.historyid)) {
-    return responses.res400(
-      req,
-      res,
-      null,
-      "historyid should be number and positive value"
+      `Invalid Query (please check your query again)`
     );
   }
 
   next();
 }
-
-//===================================================
-
-const zodBodyDummy = z.object({
-  image64: z.string(),
-});
-
-export type BodyDummy = z.infer<typeof zodBodyDummy>;

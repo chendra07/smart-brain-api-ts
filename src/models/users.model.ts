@@ -92,10 +92,11 @@ type UpdateUserInput = {
 export async function updateUserData(
   data: UpdateUserInput,
   email: string,
+  userid: number,
   t: Transaction | null
 ) {
   return await UsersTablePgModel.update(data, {
-    where: { email, isdeleted: false },
+    where: { email, userid, isdeleted: false },
     transaction: t,
   })
     .then((result) => {

@@ -22,8 +22,6 @@ const app_1 = require("../../../app");
         email: zod_1.z.string().email(),
         name: zod_1.z.string(),
         image: zod_1.z.string().url().nullable(),
-        accessToken: zod_1.z.string(),
-        refreshToken: zod_1.z.string(),
     });
     let userData;
     (0, globals_1.describe)("Test GET: v1/users/oneuser", () => {

@@ -36,7 +36,7 @@ const keys = new Keygrip(sessionKeys, "sha256", "hex");
 app.use(
   cookieSession({
     name: "session",
-    maxAge: 60 * 1000,
+    maxAge: 15 * 60 * 1000,
     keys: keys,
   })
 );

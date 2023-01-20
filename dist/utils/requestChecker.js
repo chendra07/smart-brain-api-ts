@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyTokenAndUserData = exports.checkParsePositive = void 0;
+exports.checkStringOfNumber = exports.checkParsePositive = void 0;
 function checkParsePositive(target) {
     const parsed = parseInt(target);
     if (Number.isNaN(parsed) || parsed < 0) {
@@ -9,18 +9,12 @@ function checkParsePositive(target) {
     return true;
 }
 exports.checkParsePositive = checkParsePositive;
-function verifyTokenAndUserData(tokenBody, email, userid) {
-    let verification = true;
-    let id = userid;
-    if (typeof id === "string") {
-        id = parseInt(id);
+function checkStringOfNumber(target) {
+    let valid = true;
+    //only accept string like this: "1,2,3,4"
+    if (!target.match(/^[0-9,]+$/)) {
+        valid = false;
     }
-    if (tokenBody.email !== email) {
-        verification = false;
-    }
-    if (tokenBody.userid !== id) {
-        verification = false;
-    }
-    return verification;
+    return valid;
 }
-exports.verifyTokenAndUserData = verifyTokenAndUserData;
+exports.checkStringOfNumber = checkStringOfNumber;
