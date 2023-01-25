@@ -17,7 +17,12 @@ const { ACCEPTED_URL, COOKIE_SESSION_KEY } = process.env;
 dotenv.config();
 
 // const whitelist = ACCEPTED_URL!.split(", ");
-app.use(cors());
+app.use(
+  cors({
+    allowedHeaders: "*",
+    origin: "*",
+  })
+);
 // app.use(
 //   cors({
 //     origin: (origin, callback) => {
