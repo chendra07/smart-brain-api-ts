@@ -5,42 +5,10 @@ import jwt from "jsonwebtoken";
 import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
 import { isPasswordValid } from "../utils/passwordValidator";
-import { base64ImgCheck } from "../utils/base64Checker";
+import { isBase64Image } from "../utils/base64Checker";
 
 dotenv.config();
 const { JWT_SECRET } = process.env;
-
-// const zodSessionType = z.object({
-//   email: z.string().max(100).email({ message: "invalid email format" }),
-//   userid: z.number().positive(),
-// });
-
-// export type SessionType = z.infer<typeof zodSessionType>;
-
-// export function verifySession(req: Request, res: Response, next: NextFunction) {
-//   if (!req.session?.user) {
-//     return responses.res401(
-//       req,
-//       res,
-//       null,
-//       "Session expired, please login again"
-//     );
-//   }
-//   const verifyZod = zodSessionType.safeParse(req.session.user);
-
-//   if (!verifyZod.success) {
-//     console.log(fromZodError(verifyZod.error));
-
-//     return responses.res400(
-//       req,
-//       res,
-//       null,
-//       `Invalid session please login again`
-//     );
-//   }
-
-//   next();
-// }
 
 export type tokenType = {
   email: string;
@@ -62,7 +30,7 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
   }
 
   //verify the token
-  jwt.verify(token, JWT_SECRET!, (err, userData) => {
+  jwt.verify(token, JWT_SECRET!, (err, tokenBody) => {
     if (err) {
       return responses.res403(
         req,
@@ -73,7 +41,7 @@ export function verifyToken(req: Request, res: Response, next: NextFunction) {
     }
 
     //store decoded token body to userData
-    (req as any).userData = userData;
+    (req as any).tokenBody = tokenBody;
     next();
   });
 }
@@ -162,7 +130,7 @@ export async function verifyBody_Register(
   //if base64 exists: check size & extension
   //if size or extension invalid: reject
 
-  if (image64 && !(await base64ImgCheck(image64))) {
+  if (image64 && !(await isBase64Image(image64))) {
     return responses.res400(
       req,
       res,

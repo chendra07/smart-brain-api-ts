@@ -53,8 +53,8 @@ export async function getOneUser(userid: number, email: string) {
     where: { userid, email, isdeleted: false },
     raw: true,
   })
-    .then((result: unknown) => {
-      return result as UserTableType;
+    .then((foundUser: unknown) => {
+      return foundUser as UserTableType;
     })
     .catch((error) => {
       throw new Error("[DB - usersTable]: " + error);
@@ -74,8 +74,8 @@ export async function createOneUser(
     },
     { transaction: t }
   )
-    .then((data) => {
-      return data.dataValues as unknown as UserTableType;
+    .then((newUser) => {
+      return newUser.dataValues as unknown as UserTableType;
     })
     .catch((error) => {
       console.error(error);
@@ -99,8 +99,8 @@ export async function updateOneUser(
     where: { email, userid, isdeleted: false },
     transaction: t,
   })
-    .then((result) => {
-      return true;
+    .then((affectedRows) => {
+      return affectedRows;
     })
     .catch((error) => {
       console.error(error);

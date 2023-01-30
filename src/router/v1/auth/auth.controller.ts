@@ -32,18 +32,18 @@ import {
 
 export async function httpPostRegister(req: Request, res: Response) {
   const { email, password, name, image64 } = req.body as BodyRegisterType;
-  let tempFileUrl: string | undefined;
+  let tempImageUrl: string | undefined;
   let tempFileName: string | undefined;
 
   sequelizeCfg
     .transaction(async (t) => {
       //insert to user table
-      const userData = await createOneUser(name, email, t);
+      const newUser = await createOneUser(name, email, t);
 
       //generate token
       const accessToken = signNewAccessToken({
         email,
-        userid: userData.userid!,
+        userid: newUser.userid!,
       });
 
       //insert to login table
@@ -51,47 +51,42 @@ export async function httpPostRegister(req: Request, res: Response) {
         {
           email: email,
           hash: hashPassword(password),
-          userid: userData.userid!,
+          userid: newUser.userid!,
         },
         t
       );
 
       //if user send image when register, upload the image
       if (image64) {
-        const { userid, name } = userData;
-        const { fileName, url } = await uploadFileCloudinary(
+        const { userid, name } = newUser;
+        const { fileName, imageUrl } = await uploadFileCloudinary(
           image64,
           userid!,
           name
         );
-        tempFileUrl = url;
+        tempImageUrl = imageUrl;
         tempFileName = fileName;
       }
 
       //update image field
       await updateOneUser(
-        { name: name, image: tempFileUrl },
+        { name: name, image: tempImageUrl },
         email,
-        userData.userid,
+        newUser.userid,
         t
       );
 
-      // req.session!.user = {
-      //   userid: userData.userid,
-      //   email: email,
-      // };
-
       return responses.res201(req, res, {
-        userid: userData.userid,
+        userid: newUser.userid,
         email: email,
-        image: tempFileUrl,
+        image: tempImageUrl,
         name: name,
         token: accessToken,
       });
     })
     .catch(async (error) => {
       if (tempFileName) {
-        //if registration failed and image has been uploaded, delete the file
+        //if registration failed and image has been uploaded: delete the file
         await deleteFileCloudinary(tempFileName);
       }
       return responses.res500(req, res, null, error.toString());
@@ -117,11 +112,6 @@ export async function httpPostLogin(req: Request, res: Response) {
   const userData = await getOneUser(loginData.userid, email).then((result) => {
     const { userid, email, name, image } = result;
 
-    // req.session!.user = {
-    //   userid,
-    //   email,
-    // };
-
     const accessToken = signNewAccessToken({
       email,
       userid: userid,
@@ -139,24 +129,14 @@ export async function httpPostLogin(req: Request, res: Response) {
   return responses.res200(req, res, userData, "user login successfully");
 }
 
-//just delete JWT from client side
-// export async function httpLogoutUser(req: Request, res: Response) {
-//   //delete user's session
-//   req.session = null;
-
-//   return responses.res200(req, res, null, "session deleted");
-// }
-
 export async function httpDeleteUser(req: Request, res: Response) {
-  const { email, userid } = (req as any).userData as tokenType;
+  const { email, userid } = (req as any).tokenBody as tokenType;
 
   sequelizeCfg
     .transaction(async (t) => {
       //performing soft delete actions in Logins & Users table:
       await updateOneLogin({ isdeleted: true }, email, userid, t);
       await updateOneUser({ isdeleted: true }, email, userid, t);
-
-      // req.session!.user = null;
 
       return responses.res200(req, res, null, "User deleted successfully");
     })
@@ -166,7 +146,7 @@ export async function httpDeleteUser(req: Request, res: Response) {
 }
 
 export async function httpChangePassword(req: Request, res: Response) {
-  const { email, userid } = (req as any).userData as tokenType;
+  const { email, userid } = (req as any).tokenBody as tokenType;
 
   const { newPassword, oldPassword } = req.body as BodyChangePassword;
 

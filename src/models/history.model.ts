@@ -58,8 +58,8 @@ export async function createUserHistory(
     { imageurl, date, userid },
     { transaction: t }
   )
-    .then((data) => {
-      return data.dataValues as unknown as HistoryTableType;
+    .then((userHistories) => {
+      return userHistories.dataValues as unknown as HistoryTableType;
     })
     .catch((error) => {
       console.error(error);
@@ -77,12 +77,10 @@ export async function findAllUserHistory(
     offset: skip * limit,
     limit: limit,
     raw: true,
-  }).then((data) => {
-    console.log(data.rows);
-
+  }).then((userHistories) => {
     return {
-      total: data.count,
-      data: data.rows as unknown as HistoryTableType[],
+      total: userHistories.count,
+      data: userHistories.rows as unknown as HistoryTableType[],
     };
   });
 }

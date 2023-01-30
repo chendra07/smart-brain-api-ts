@@ -33,7 +33,7 @@ export async function uploadFileCloudinary(
     );
 
     return {
-      url: uploadedResponse.url,
+      imageUrl: uploadedResponse.url,
       fileName: `${userId}-${userName}`,
     };
   } catch (error) {

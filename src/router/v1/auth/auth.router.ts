@@ -19,8 +19,6 @@ authRouter.post("/register", verifyBody_Register, httpPostRegister);
 
 authRouter.post("/login", verifyBody_Login, httpPostLogin);
 
-// authRouter.delete("/logout", httpLogoutUser);
-
 authRouter.delete("/deleteuser", verifyToken, httpDeleteUser);
 
 authRouter.put(

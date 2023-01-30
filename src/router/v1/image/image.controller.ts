@@ -21,7 +21,7 @@ import { tokenType } from "../../../middlewares/auth.middleware";
 const { CLARIFAI_USER_ID, CLARIFAI_APP_ID, CLARIFAI_API_KEY } = process.env;
 
 export async function detectFaceAI(req: Request, res: Response) {
-  const { userid, email } = (req as any).userData as tokenType;
+  const { userid, email } = (req as any).tokenBody as tokenType;
 
   const { imageUrl } = req.body as BodyDetectFace;
 
@@ -81,7 +81,7 @@ export async function detectFaceAI(req: Request, res: Response) {
 }
 
 export async function viewUserHistory(req: Request, res: Response) {
-  const { userid, email } = (req as any).userData as tokenType;
+  const { userid, email } = (req as any).tokenBody as tokenType;
 
   const { limit, skip } = req.body as BodyViewUserHistory;
 
@@ -91,7 +91,7 @@ export async function viewUserHistory(req: Request, res: Response) {
 }
 
 export async function deleteHistory(req: Request, res: Response) {
-  const { userid, email } = (req as any).userData as tokenType;
+  const { userid, email } = (req as any).tokenBody as tokenType;
 
   const { historyid } = req.query as QueryDeleteHistory;
 
