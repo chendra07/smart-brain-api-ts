@@ -1,5 +1,5 @@
 import { fromBuffer } from "file-type";
-import { matchExtension } from "./extensionFunction";
+import { isMatchExtension } from "./extension";
 
 export async function base64ImgCheck(image64: string) {
   const buffered = Buffer.from(image64, "base64"); //turn base64 to buffer
@@ -8,7 +8,7 @@ export async function base64ImgCheck(image64: string) {
 
   if (
     result &&
-    matchExtension(result.ext, ["png", "jpg", "jpeg"]) &&
+    isMatchExtension(result.ext, ["png", "jpg", "jpeg"]) &&
     buffered.byteLength <= maxByte
   ) {
     return true;

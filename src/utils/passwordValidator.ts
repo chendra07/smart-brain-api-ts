@@ -1,6 +1,4 @@
-export function passwordValidator(password: string): boolean {
-  let valid = true;
-
+export function isPasswordValid(password: string): boolean {
   const regexCfgList = [
     "(?=.*[0-9])", //1 number
     "(?=.*[!@#$%^&*_])", //1 special characters
@@ -11,8 +9,8 @@ export function passwordValidator(password: string): boolean {
   const combinedRegex = regexCfgList.join("");
 
   if (!password.match(combinedRegex)) {
-    valid = false;
+    return false;
   }
 
-  return valid;
+  return true;
 }

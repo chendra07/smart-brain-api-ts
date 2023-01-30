@@ -1,4 +1,4 @@
-export function checkParsePositive(target: string) {
+export function isParsedPositive(target: string) {
   const parsed = parseInt(target);
   if (Number.isNaN(parsed) || parsed < 0) {
     return false;
@@ -7,13 +7,11 @@ export function checkParsePositive(target: string) {
   return true;
 }
 
-export function checkStringOfNumber(target: string) {
-  let valid = true;
-
+export function isStringOfNumber(target: string) {
   //only accept string like this: "1,2,3,4"
   if (!target.match(/^[0-9,]+$/)) {
-    valid = false;
+    return false;
   }
 
-  return valid;
+  return true;
 }

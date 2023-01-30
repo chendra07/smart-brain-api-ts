@@ -1,38 +1,81 @@
 import { Request, Response, NextFunction } from "express";
+import dotenv from "dotenv";
 import { z } from "zod";
+import jwt from "jsonwebtoken";
 import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
-import { passwordValidator } from "../utils/passwordValidator";
+import { isPasswordValid } from "../utils/passwordValidator";
 import { base64ImgCheck } from "../utils/base64Checker";
 
-const zodSessionType = z.object({
-  email: z.string().max(100).email({ message: "invalid email format" }),
-  userid: z.number().positive(),
-});
+dotenv.config();
+const { JWT_SECRET } = process.env;
 
-export type SessionType = z.infer<typeof zodSessionType>;
+// const zodSessionType = z.object({
+//   email: z.string().max(100).email({ message: "invalid email format" }),
+//   userid: z.number().positive(),
+// });
 
-export function verifySession(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.user) {
-    return responses.res401(req, res, null);
-  }
+// export type SessionType = z.infer<typeof zodSessionType>;
 
-  console.log(req.session.user);
+// export function verifySession(req: Request, res: Response, next: NextFunction) {
+//   if (!req.session?.user) {
+//     return responses.res401(
+//       req,
+//       res,
+//       null,
+//       "Session expired, please login again"
+//     );
+//   }
+//   const verifyZod = zodSessionType.safeParse(req.session.user);
 
-  const verifyZod = zodSessionType.safeParse(req.session.user);
+//   if (!verifyZod.success) {
+//     console.log(fromZodError(verifyZod.error));
 
-  if (!verifyZod.success) {
-    console.log(fromZodError(verifyZod.error));
+//     return responses.res400(
+//       req,
+//       res,
+//       null,
+//       `Invalid session please login again`
+//     );
+//   }
 
-    return responses.res400(
+//   next();
+// }
+
+export type tokenType = {
+  email: string;
+  userid: number;
+};
+
+export function verifyToken(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+
+  //if token exist, split the "bearer" and the token
+  const token = authHeader && authHeader.split(" ")[1];
+  if (!token) {
+    return responses.res401(
       req,
       res,
       null,
-      `Invalid session please login again`
+      "No token detected, please login or register first"
     );
   }
 
-  next();
+  //verify the token
+  jwt.verify(token, JWT_SECRET!, (err, userData) => {
+    if (err) {
+      return responses.res403(
+        req,
+        res,
+        null,
+        "Token expire or invalid, try to refresh token or login"
+      );
+    }
+
+    //store decoded token body to userData
+    (req as any).userData = userData;
+    next();
+  });
 }
 
 //==========================================================================
@@ -63,7 +106,7 @@ export function verifyBody_Login(
 
   const { password } = req.body as BodyLoginType;
 
-  const verifyPass = passwordValidator(password);
+  const verifyPass = isPasswordValid(password);
 
   if (!verifyPass) {
     return responses.res400(
@@ -107,7 +150,7 @@ export async function verifyBody_Register(
 
   const { password, image64 } = req.body as BodyRegisterType;
 
-  if (!passwordValidator(password)) {
+  if (!isPasswordValid(password)) {
     return responses.res400(
       req,
       res,
@@ -158,7 +201,7 @@ export function verifyBody_ChangePassword(
 
   const { newPassword, oldPassword } = req.body as BodyChangePassword;
 
-  if (!passwordValidator(newPassword) || !passwordValidator(oldPassword)) {
+  if (!isPasswordValid(newPassword) || !isPasswordValid(oldPassword)) {
     return responses.res400(
       req,
       res,

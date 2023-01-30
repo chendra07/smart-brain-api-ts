@@ -15,10 +15,10 @@ import { sequelizeCfg } from "../../../models/postgresDB";
 
 //utils
 import { responses } from "../../../utils/responses";
-import { SessionType } from "../../../middlewares/auth.middleware";
+import { tokenType } from "../../../middlewares/auth.middleware";
 
 export async function httpOneUser(req: Request, res: Response) {
-  const { email, userid } = req.session!.user as SessionType;
+  const { email, userid } = (req as any).userData as tokenType;
 
   return await getOneUser(userid, email)
     .then((result) => {
@@ -30,7 +30,8 @@ export async function httpOneUser(req: Request, res: Response) {
 }
 
 export async function httpUpdateUser(req: Request, res: Response) {
-  const { userid, email } = req.session!.user as SessionType;
+  const { email, userid } = (req as any).userData as tokenType;
+
   const { newName, deleteImage, image64 } = req.body as BodyUpdateUser;
   let tempUrl: string | null | undefined;
 

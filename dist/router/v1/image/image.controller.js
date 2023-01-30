@@ -8,7 +8,7 @@ const responses_1 = require("../../../utils/responses");
 const history_model_1 = require("../../../models/history.model");
 const { CLARIFAI_USER_ID, CLARIFAI_APP_ID, CLARIFAI_API_KEY } = process.env;
 async function detectFaceAI(req, res) {
-    const { userid } = req.session.user;
+    const { userid, email } = req.userData;
     const { imageUrl } = req.body;
     const MODEL_ID = "face-detection";
     const body = {
@@ -48,14 +48,14 @@ async function detectFaceAI(req, res) {
 }
 exports.detectFaceAI = detectFaceAI;
 async function viewUserHistory(req, res) {
-    const { userid } = req.session.user;
+    const { userid, email } = req.userData;
     const { limit, skip } = req.body;
     const userHistory = await (0, history_model_1.findUserHistory)(userid, skip, limit);
     return responses_1.responses.res200(req, res, userHistory);
 }
 exports.viewUserHistory = viewUserHistory;
 async function deleteHistory(req, res) {
-    const { userid } = req.session.user;
+    const { userid, email } = req.userData;
     const { historyid } = req.query;
     const listOfHistoryid = historyid.split(",").map((id) => Number(id));
     postgresDB_1.sequelizeCfg

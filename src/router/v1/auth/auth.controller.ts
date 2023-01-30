@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 //utils
 import { responses } from "../../../utils/responses";
+import { signNewAccessToken } from "../../../utils/tokenJWT";
 import { hashPassword, comparePassword } from "../../../utils/bcryptPassword";
 
 //models
@@ -26,7 +27,7 @@ import {
   BodyRegisterType,
   BodyLoginType,
   BodyChangePassword,
-  SessionType,
+  tokenType,
 } from "../../../middlewares/auth.middleware";
 
 export async function httpPostRegister(req: Request, res: Response) {
@@ -38,6 +39,12 @@ export async function httpPostRegister(req: Request, res: Response) {
     .transaction(async (t) => {
       //insert to user table
       const userData = await createNewUser(name, email, t);
+
+      //generate token
+      const accessToken = signNewAccessToken({
+        email,
+        userid: userData.userid!,
+      });
 
       //insert to login table
       await createNewLogin(
@@ -69,16 +76,17 @@ export async function httpPostRegister(req: Request, res: Response) {
         t
       );
 
-      req.session!.user = {
-        userid: userData.userid,
-        email: email,
-      };
+      // req.session!.user = {
+      //   userid: userData.userid,
+      //   email: email,
+      // };
 
       return responses.res201(req, res, {
         userid: userData.userid,
         email: email,
         image: tempFileUrl,
         name: name,
+        token: accessToken,
       });
     })
     .catch(async (error) => {
@@ -109,31 +117,38 @@ export async function httpPostLogin(req: Request, res: Response) {
   const userData = await getOneUser(loginData.userid, email).then((result) => {
     const { userid, email, name, image } = result;
 
-    req.session!.user = {
-      userid,
+    // req.session!.user = {
+    //   userid,
+    //   email,
+    // };
+
+    const accessToken = signNewAccessToken({
       email,
-    };
+      userid: userid,
+    });
 
     return {
       userid,
       email,
       name,
       image,
+      token: accessToken,
     };
   });
 
   return responses.res200(req, res, userData, "user login successfully");
 }
 
-export async function httpLogoutUser(req: Request, res: Response) {
-  //delete user's session
-  req.session = null;
+//just delete JWT from client side
+// export async function httpLogoutUser(req: Request, res: Response) {
+//   //delete user's session
+//   req.session = null;
 
-  return responses.res200(req, res, null, "session deleted");
-}
+//   return responses.res200(req, res, null, "session deleted");
+// }
 
 export async function httpDeleteUser(req: Request, res: Response) {
-  const { email, userid } = req.session!.user as SessionType;
+  const { email, userid } = (req as any).userData as tokenType;
 
   sequelizeCfg
     .transaction(async (t) => {
@@ -141,7 +156,7 @@ export async function httpDeleteUser(req: Request, res: Response) {
       await updateLoginData({ isdeleted: true }, email, userid, t);
       await updateUserData({ isdeleted: true }, email, userid, t);
 
-      req.session!.user = null;
+      // req.session!.user = null;
 
       return responses.res200(req, res, null, "User deleted successfully");
     })
@@ -151,7 +166,7 @@ export async function httpDeleteUser(req: Request, res: Response) {
 }
 
 export async function httpChangePassword(req: Request, res: Response) {
-  const { email, userid } = req.session!.user as SessionType;
+  const { email, userid } = (req as any).userData as tokenType;
 
   const { newPassword, oldPassword } = req.body as BodyChangePassword;
 
@@ -169,14 +184,7 @@ export async function httpChangePassword(req: Request, res: Response) {
     .transaction(async (t) => {
       await updateLoginData({ hash: hashNewPass }, email, userid, t);
 
-      req.session!.user = null;
-
-      return responses.res200(
-        req,
-        res,
-        null,
-        "password successfully updated, please login again"
-      );
+      return responses.res200(req, res, null, "password successfully updated");
     })
     .catch((error) => {
       return responses.res500(req, res, null, "Unable to update password");

@@ -1,8 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.httpChangePassword = exports.httpDeleteUser = exports.httpLogoutUser = exports.httpPostLogin = exports.httpPostRegister = void 0;
+exports.httpChangePassword = exports.httpDeleteUser = exports.httpPostLogin = exports.httpPostRegister = void 0;
 //utils
 const responses_1 = require("../../../utils/responses");
+const tokenJWT_1 = require("../../../utils/tokenJWT");
 const bcryptPassword_1 = require("../../../utils/bcryptPassword");
 //models
 const postgresDB_1 = require("../../../models/postgresDB");
@@ -17,6 +18,11 @@ async function httpPostRegister(req, res) {
         .transaction(async (t) => {
         //insert to user table
         const userData = await (0, users_model_1.createNewUser)(name, email, t);
+        //generate token
+        const accessToken = (0, tokenJWT_1.signNewAccessToken)({
+            email,
+            userid: userData.userid,
+        });
         //insert to login table
         await (0, login_model_1.createNewLogin)({
             email: email,
@@ -32,15 +38,16 @@ async function httpPostRegister(req, res) {
         }
         //update image field
         await (0, users_model_1.updateUserData)({ name: name, image: tempFileUrl }, email, userData.userid, t);
-        req.session.user = {
-            userid: userData.userid,
-            email: email,
-        };
+        // req.session!.user = {
+        //   userid: userData.userid,
+        //   email: email,
+        // };
         return responses_1.responses.res201(req, res, {
             userid: userData.userid,
             email: email,
             image: tempFileUrl,
             name: name,
+            token: accessToken,
         });
     })
         .catch(async (error) => {
@@ -62,34 +69,39 @@ async function httpPostLogin(req, res) {
     //get user data
     const userData = await (0, users_model_1.getOneUser)(loginData.userid, email).then((result) => {
         const { userid, email, name, image } = result;
-        req.session.user = {
-            userid,
+        // req.session!.user = {
+        //   userid,
+        //   email,
+        // };
+        const accessToken = (0, tokenJWT_1.signNewAccessToken)({
             email,
-        };
+            userid: userid,
+        });
         return {
             userid,
             email,
             name,
             image,
+            token: accessToken,
         };
     });
     return responses_1.responses.res200(req, res, userData, "user login successfully");
 }
 exports.httpPostLogin = httpPostLogin;
-async function httpLogoutUser(req, res) {
-    //delete user's session
-    req.session = null;
-    return responses_1.responses.res200(req, res, null, "session deleted");
-}
-exports.httpLogoutUser = httpLogoutUser;
+//just delete JWT from client side
+// export async function httpLogoutUser(req: Request, res: Response) {
+//   //delete user's session
+//   req.session = null;
+//   return responses.res200(req, res, null, "session deleted");
+// }
 async function httpDeleteUser(req, res) {
-    const { email, userid } = req.session.user;
+    const { email, userid } = req.userData;
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
         //performing soft delete actions in Logins & Users table:
         await (0, login_model_1.updateLoginData)({ isdeleted: true }, email, userid, t);
         await (0, users_model_1.updateUserData)({ isdeleted: true }, email, userid, t);
-        req.session.user = null;
+        // req.session!.user = null;
         return responses_1.responses.res200(req, res, null, "User deleted successfully");
     })
         .catch((error) => {
@@ -98,7 +110,7 @@ async function httpDeleteUser(req, res) {
 }
 exports.httpDeleteUser = httpDeleteUser;
 async function httpChangePassword(req, res) {
-    const { email, userid } = req.session.user;
+    const { email, userid } = req.userData;
     const { newPassword, oldPassword } = req.body;
     const loginData = await (0, login_model_1.getOneLoginData)(email);
     //if old password did not match the database: reject request
@@ -110,8 +122,7 @@ async function httpChangePassword(req, res) {
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
         await (0, login_model_1.updateLoginData)({ hash: hashNewPass }, email, userid, t);
-        req.session.user = null;
-        return responses_1.responses.res200(req, res, null, "password successfully updated, please login again");
+        return responses_1.responses.res200(req, res, null, "password successfully updated");
     })
         .catch((error) => {
         return responses_1.responses.res500(req, res, null, "Unable to update password");

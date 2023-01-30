@@ -8,7 +8,7 @@ const postgresDB_1 = require("../../../models/postgresDB");
 //utils
 const responses_1 = require("../../../utils/responses");
 async function httpOneUser(req, res) {
-    const { email, userid } = req.session.user;
+    const { email, userid } = req.userData;
     return await (0, users_model_1.getOneUser)(userid, email)
         .then((result) => {
         return responses_1.responses.res200(req, res, result);
@@ -19,7 +19,7 @@ async function httpOneUser(req, res) {
 }
 exports.httpOneUser = httpOneUser;
 async function httpUpdateUser(req, res) {
-    const { userid, email } = req.session.user;
+    const { email, userid } = req.userData;
     const { newName, deleteImage, image64 } = req.body;
     let tempUrl;
     // 6 scenarios:

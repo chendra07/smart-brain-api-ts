@@ -1,28 +1,36 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.verifyBody_ChangePassword = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifySession = void 0;
+exports.verifyBody_ChangePassword = exports.verifyBody_Register = exports.verifyBody_Login = exports.verifyToken = void 0;
+const dotenv_1 = __importDefault(require("dotenv"));
 const zod_1 = require("zod");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const zod_validation_error_1 = require("zod-validation-error");
 const responses_1 = require("../utils/responses");
 const passwordValidator_1 = require("../utils/passwordValidator");
 const base64Checker_1 = require("../utils/base64Checker");
-const zodSessionType = zod_1.z.object({
-    email: zod_1.z.string().max(100).email({ message: "invalid email format" }),
-    userid: zod_1.z.number().positive(),
-});
-function verifySession(req, res, next) {
-    if (!req.session?.user) {
-        return responses_1.responses.res401(req, res, null);
+dotenv_1.default.config();
+const { JWT_SECRET } = process.env;
+function verifyToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    //if token exist, split the "bearer" and the token
+    const token = authHeader && authHeader.split(" ")[1];
+    if (!token) {
+        return responses_1.responses.res401(req, res, null, "No token detected, please login or register first");
     }
-    console.log(req.session.user);
-    const verifyZod = zodSessionType.safeParse(req.session.user);
-    if (!verifyZod.success) {
-        console.log((0, zod_validation_error_1.fromZodError)(verifyZod.error));
-        return responses_1.responses.res400(req, res, null, `Invalid session please login again`);
-    }
-    next();
+    //verify the token
+    jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, userData) => {
+        if (err) {
+            return responses_1.responses.res403(req, res, null, "Token expire or invalid, try to refresh token or login");
+        }
+        //store decoded token body to userData
+        req.userData = userData;
+        next();
+    });
 }
-exports.verifySession = verifySession;
+exports.verifyToken = verifyToken;
 //==========================================================================
 const zodBodyLogin = zod_1.z.object({
     email: zod_1.z.string().max(100).email({ message: "invalid email format" }),

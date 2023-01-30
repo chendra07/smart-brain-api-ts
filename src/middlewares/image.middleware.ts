@@ -3,7 +3,7 @@ import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 
 import { responses } from "../utils/responses";
-import { checkStringOfNumber } from "../utils/requestChecker";
+import { isStringOfNumber } from "../utils/requestChecker";
 
 // export function verifyFiles_UploadImage(
 //   req: Request,
@@ -14,7 +14,7 @@ import { checkStringOfNumber } from "../utils/requestChecker";
 //     const maxSize = 4000000; //1 MB = 1000000 Bytes (in decimal), max: 4 mb or 4,000,000 bytes
 //     const { image } = req.files;
 //     const userImage = image as UploadedFile;
-//     const ext = extensionExtractor(userImage.name) ?? "undefined";
+//     const ext = getExtensionName(userImage.name) ?? "undefined";
 
 //     //block request if name has no extension
 //     if (ext === "undefined") {
@@ -118,7 +118,7 @@ export function verifyQuery_DeleteHistory(
 
   const query = req.query as QueryDeleteHistory;
 
-  if (!checkStringOfNumber(query.historyid)) {
+  if (!isStringOfNumber(query.historyid)) {
     return responses.res400(
       req,
       res,

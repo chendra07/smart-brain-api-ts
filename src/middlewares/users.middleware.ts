@@ -4,7 +4,6 @@ import { fromZodError } from "zod-validation-error";
 
 import { responses } from "../utils/responses";
 
-import { checkParsePositive } from "../utils/requestChecker";
 import { base64ImgCheck } from "../utils/base64Checker";
 
 //===================================================================================
