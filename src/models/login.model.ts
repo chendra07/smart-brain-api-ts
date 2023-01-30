@@ -66,7 +66,7 @@ export async function createNewLogin(
     });
 }
 
-export async function getOneLoginData(email: string) {
+export async function getOneLogin(email: string) {
   return await LoginTablePgModel.findOne({
     where: { email, isdeleted: false },
     raw: true,
@@ -82,7 +82,7 @@ type UpdateLoginInput = {
   hash?: string;
 };
 
-export async function updateLoginData(
+export async function updateOneLogin(
   data: UpdateLoginInput,
   email: string,
   userid: number,

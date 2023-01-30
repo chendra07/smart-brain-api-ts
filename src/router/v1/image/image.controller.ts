@@ -5,8 +5,8 @@ import { responses } from "../../../utils/responses";
 
 //model
 import {
-  findUserHistory,
-  createHistoryEntry,
+  findAllUserHistory,
+  createUserHistory,
   deleteUserHistory,
 } from "../../../models/history.model";
 
@@ -49,7 +49,7 @@ export async function detectFaceAI(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await createHistoryEntry(
+      await createUserHistory(
         { date: new Date(), imageurl: imageUrl, userid },
         t
       );
@@ -85,7 +85,7 @@ export async function viewUserHistory(req: Request, res: Response) {
 
   const { limit, skip } = req.body as BodyViewUserHistory;
 
-  const userHistory = await findUserHistory(userid, skip, limit);
+  const userHistory = await findAllUserHistory(userid, skip, limit);
 
   return responses.res200(req, res, userHistory);
 }

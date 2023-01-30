@@ -43,14 +43,14 @@ type HistoryTableType = {
   isdeleted: boolean;
 };
 
-type CreateHistoryEntryInput = {
+type createUserHistoryInput = {
   imageurl: string;
   date: Date;
   userid: number;
 };
 
-export async function createHistoryEntry(
-  data: CreateHistoryEntryInput,
+export async function createUserHistory(
+  data: createUserHistoryInput,
   t: Transaction | null
 ) {
   const { imageurl, date, userid } = data;
@@ -67,7 +67,7 @@ export async function createHistoryEntry(
     });
 }
 
-export async function findUserHistory(
+export async function findAllUserHistory(
   userid: number,
   skip: number,
   limit: number

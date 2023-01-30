@@ -61,7 +61,7 @@ export async function getOneUser(userid: number, email: string) {
     });
 }
 
-export async function createNewUser(
+export async function createOneUser(
   name: string,
   email: string,
   t: Transaction | null
@@ -89,7 +89,7 @@ type UpdateUserInput = {
   name?: string;
 };
 
-export async function updateUserData(
+export async function updateOneUser(
   data: UpdateUserInput,
   email: string,
   userid: number,

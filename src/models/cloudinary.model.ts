@@ -37,8 +37,6 @@ export async function uploadFileCloudinary(
       fileName: `${userId}-${userName}`,
     };
   } catch (error) {
-    console.error(error);
-
     throw new Error("[Cloudinary - Upload]: Failed to upload image");
   }
 }

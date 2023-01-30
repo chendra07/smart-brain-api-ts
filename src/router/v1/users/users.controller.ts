@@ -10,7 +10,7 @@ import {
   deleteFileCloudinary,
   uploadFileCloudinary,
 } from "../../../models/cloudinary.model";
-import { getOneUser, updateUserData } from "../../../models/users.model";
+import { getOneUser, updateOneUser } from "../../../models/users.model";
 import { sequelizeCfg } from "../../../models/postgresDB";
 
 //utils
@@ -68,7 +68,7 @@ export async function httpUpdateUser(req: Request, res: Response) {
       }
 
       //update new data to db users
-      await updateUserData({ image: tempUrl, name: newName }, email, userid, t);
+      await updateOneUser({ image: tempUrl, name: newName }, email, userid, t);
 
       return responses.res200(
         req,

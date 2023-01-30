@@ -9,13 +9,13 @@ import { hashPassword, comparePassword } from "../../../utils/bcryptPassword";
 import { sequelizeCfg } from "../../../models/postgresDB";
 import {
   createNewLogin,
-  getOneLoginData,
-  updateLoginData,
+  getOneLogin,
+  updateOneLogin,
 } from "../../../models/login.model";
 import {
-  createNewUser,
+  createOneUser,
   getOneUser,
-  updateUserData,
+  updateOneUser,
 } from "../../../models/users.model";
 import {
   uploadFileCloudinary,
@@ -38,7 +38,7 @@ export async function httpPostRegister(req: Request, res: Response) {
   sequelizeCfg
     .transaction(async (t) => {
       //insert to user table
-      const userData = await createNewUser(name, email, t);
+      const userData = await createOneUser(name, email, t);
 
       //generate token
       const accessToken = signNewAccessToken({
@@ -69,7 +69,7 @@ export async function httpPostRegister(req: Request, res: Response) {
       }
 
       //update image field
-      await updateUserData(
+      await updateOneUser(
         { name: name, image: tempFileUrl },
         email,
         userData.userid,
@@ -101,7 +101,7 @@ export async function httpPostRegister(req: Request, res: Response) {
 export async function httpPostLogin(req: Request, res: Response) {
   const { email, password } = req.body as BodyLoginType;
 
-  const loginData = await getOneLoginData(email);
+  const loginData = await getOneLogin(email);
 
   //verify password
   if (!loginData || !comparePassword(password, loginData.hash)) {
@@ -153,8 +153,8 @@ export async function httpDeleteUser(req: Request, res: Response) {
   sequelizeCfg
     .transaction(async (t) => {
       //performing soft delete actions in Logins & Users table:
-      await updateLoginData({ isdeleted: true }, email, userid, t);
-      await updateUserData({ isdeleted: true }, email, userid, t);
+      await updateOneLogin({ isdeleted: true }, email, userid, t);
+      await updateOneUser({ isdeleted: true }, email, userid, t);
 
       // req.session!.user = null;
 
@@ -170,7 +170,7 @@ export async function httpChangePassword(req: Request, res: Response) {
 
   const { newPassword, oldPassword } = req.body as BodyChangePassword;
 
-  const loginData = await getOneLoginData(email);
+  const loginData = await getOneLogin(email);
 
   //if old password did not match the database: reject request
   if (!comparePassword(oldPassword, loginData.hash)) {
@@ -182,7 +182,7 @@ export async function httpChangePassword(req: Request, res: Response) {
 
   sequelizeCfg
     .transaction(async (t) => {
-      await updateLoginData({ hash: hashNewPass }, email, userid, t);
+      await updateOneLogin({ hash: hashNewPass }, email, userid, t);
 
       return responses.res200(req, res, null, "password successfully updated");
     })
