@@ -10,6 +10,6 @@ type JWTBodyType = {
 export function signNewAccessToken(data: JWTBodyType) {
   return jwt.sign(data, JWT_SECRET!, {
     algorithm: "HS256",
-    expiresIn: "20s",
+    expiresIn: "30m",
   });
 }

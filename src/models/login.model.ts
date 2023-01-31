@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-export const LoginTablePgModel = sequelizeCfg.define(
+export const LoginPgModel = sequelizeCfg.define(
   "login",
   {
     loginid: {
@@ -52,10 +52,10 @@ export type createLoginInput = {
 };
 
 export async function createNewLogin(
-  data: createLoginInput,
+  newLoginInput: createLoginInput,
   t: Transaction | null
 ) {
-  return await LoginTablePgModel.create(data, { transaction: t })
+  return await LoginPgModel.create(newLoginInput, { transaction: t })
     .then((newLogin) => {
       return newLogin.dataValues as unknown as LoginTableType;
     })
@@ -67,11 +67,11 @@ export async function createNewLogin(
 }
 
 export async function getOneLogin(email: string) {
-  return await LoginTablePgModel.findOne({
+  return await LoginPgModel.findOne({
     where: { email, isdeleted: false },
     raw: true,
-  }).then((loginFound: unknown) => {
-    return loginFound as LoginTableType;
+  }).then((activeLoginFound: unknown) => {
+    return activeLoginFound as LoginTableType;
   });
 }
 
@@ -83,17 +83,17 @@ type UpdateLoginInput = {
 };
 
 export async function updateOneLogin(
-  data: UpdateLoginInput,
+  loginInput: UpdateLoginInput,
   email: string,
   userid: number,
   t?: Transaction | null
 ) {
-  return await LoginTablePgModel.update(data, {
+  return await LoginPgModel.update(loginInput, {
     where: { email, userid, isdeleted: false },
     transaction: t,
   })
-    .then((affectedRows) => {
-      return affectedRows;
+    .then((affectedLoginRows) => {
+      return affectedLoginRows;
     })
     .catch((error) => {
       console.error(error);

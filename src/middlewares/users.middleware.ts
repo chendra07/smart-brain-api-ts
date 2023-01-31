@@ -4,7 +4,7 @@ import { fromZodError } from "zod-validation-error";
 
 import { responses } from "../utils/responses";
 
-import { isBase64Image } from "../utils/base64Checker";
+import { isBase64ImageValid } from "../utils/base64Checker";
 
 //===================================================================================
 
@@ -34,7 +34,15 @@ export async function verifyBody_UpdateUser(
 
   const { image64 } = req.body as BodyUpdateUser;
 
-  if (image64 && !(await isBase64Image(image64))) {
+  if (
+    image64 &&
+    !(await isBase64ImageValid(image64, 4000000, [
+      "webp",
+      "png",
+      "jpg",
+      "jpeg",
+    ]))
+  ) {
     return responses.res400(
       req,
       res,

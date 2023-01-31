@@ -1,4 +1,4 @@
-export function isPasswordValid(password: string): boolean {
+export function isPasswordValid(password: string) {
   const regexCfgList = [
     "(?=.*[0-9])", //1 number
     "(?=.*[!@#$%^&*_])", //1 special characters

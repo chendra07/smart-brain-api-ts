@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-export const HistoryTablePgModel = sequelizeCfg.define(
+export const HistoryPgModel = sequelizeCfg.define(
   "histories",
   {
     historyid: {
@@ -53,11 +53,7 @@ export async function createUserHistory(
   data: createUserHistoryInput,
   t: Transaction | null
 ) {
-  const { imageurl, date, userid } = data;
-  return HistoryTablePgModel.create(
-    { imageurl, date, userid },
-    { transaction: t }
-  )
+  return HistoryPgModel.create(data, { transaction: t })
     .then((userHistories) => {
       return userHistories.dataValues as unknown as HistoryTableType;
     })
@@ -72,15 +68,15 @@ export async function findAllUserHistory(
   skip: number,
   limit: number
 ) {
-  return HistoryTablePgModel.findAndCountAll({
+  return HistoryPgModel.findAndCountAll({
     where: { userid, isdeleted: false },
     offset: skip * limit,
     limit: limit,
     raw: true,
-  }).then((userHistories) => {
+  }).then((userActiveHistories) => {
     return {
-      total: userHistories.count,
-      data: userHistories.rows as unknown as HistoryTableType[],
+      total: userActiveHistories.count,
+      data: userActiveHistories.rows as unknown as HistoryTableType[],
     };
   });
 }
@@ -90,17 +86,16 @@ export async function deleteUserHistory(
   userid: number,
   t: Transaction | null
 ) {
-  return HistoryTablePgModel.update(
+  return HistoryPgModel.update(
     {
       isdeleted: true,
     },
     { where: { historyid, userid }, transaction: t }
   )
-    .then((result) => {
-      return true;
+    .then((affectedHistoryRows) => {
+      return affectedHistoryRows;
     })
     .catch((error) => {
-      console.error(error);
       throw new Error(
         "[DB - History]: unable to update history database, try again later"
       );

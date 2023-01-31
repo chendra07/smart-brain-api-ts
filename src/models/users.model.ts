@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { sequelizeCfg } from "./postgresDB";
 
-export const UsersTablePgModel = sequelizeCfg.define(
+export const UsersPgModel = sequelizeCfg.define(
   "users",
   {
     userid: {
@@ -49,12 +49,12 @@ export type UserTableType = {
 };
 
 export async function getOneUser(userid: number, email: string) {
-  return await UsersTablePgModel.findOne({
+  return await UsersPgModel.findOne({
     where: { userid, email, isdeleted: false },
     raw: true,
   })
-    .then((foundUser: unknown) => {
-      return foundUser as UserTableType;
+    .then((activeUserFound: unknown) => {
+      return activeUserFound as UserTableType;
     })
     .catch((error) => {
       throw new Error("[DB - usersTable]: " + error);
@@ -66,7 +66,7 @@ export async function createOneUser(
   email: string,
   t: Transaction | null
 ) {
-  return await UsersTablePgModel.create(
+  return await UsersPgModel.create(
     {
       name: name,
       email: email,
@@ -95,12 +95,12 @@ export async function updateOneUser(
   userid: number,
   t: Transaction | null
 ) {
-  return await UsersTablePgModel.update(data, {
+  return await UsersPgModel.update(data, {
     where: { email, userid, isdeleted: false },
     transaction: t,
   })
-    .then((affectedRows) => {
-      return affectedRows;
+    .then((affectedUsersRows) => {
+      return affectedUsersRows;
     })
     .catch((error) => {
       console.error(error);
