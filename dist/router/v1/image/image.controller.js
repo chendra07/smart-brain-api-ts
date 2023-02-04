@@ -8,7 +8,7 @@ const responses_1 = require("../../../utils/responses");
 const history_model_1 = require("../../../models/history.model");
 const { CLARIFAI_USER_ID, CLARIFAI_APP_ID, CLARIFAI_API_KEY } = process.env;
 async function detectFaceAI(req, res) {
-    const { userid, email } = req.userData;
+    const { userid, email } = req.tokenBody;
     const { imageUrl } = req.body;
     const MODEL_ID = "face-detection";
     const body = {
@@ -31,7 +31,7 @@ async function detectFaceAI(req, res) {
     };
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
-        await (0, history_model_1.createHistoryEntry)({ date: new Date(), imageurl: imageUrl, userid }, t);
+        await (0, history_model_1.createUserHistory)({ date: new Date(), imageurl: imageUrl, userid }, t);
         const imageResult = await axiosRequest_1.axiosRequest
             .Post(`https://api.clarifai.com`, `/v2/models/${MODEL_ID}/outputs`, body, headerCfg)
             .then((result) => {
@@ -48,14 +48,14 @@ async function detectFaceAI(req, res) {
 }
 exports.detectFaceAI = detectFaceAI;
 async function viewUserHistory(req, res) {
-    const { userid, email } = req.userData;
+    const { userid, email } = req.tokenBody;
     const { limit, skip } = req.body;
-    const userHistory = await (0, history_model_1.findUserHistory)(userid, skip, limit);
+    const userHistory = await (0, history_model_1.findAllUserHistory)(userid, skip, limit);
     return responses_1.responses.res200(req, res, userHistory);
 }
 exports.viewUserHistory = viewUserHistory;
 async function deleteHistory(req, res) {
-    const { userid, email } = req.userData;
+    const { userid, email } = req.tokenBody;
     const { historyid } = req.query;
     const listOfHistoryid = historyid.split(",").map((id) => Number(id));
     postgresDB_1.sequelizeCfg

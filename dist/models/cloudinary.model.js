@@ -25,12 +25,11 @@ async function uploadFileCloudinary(image64, userId, userName) {
             public_id: `${userId}-${userName}`,
         });
         return {
-            url: uploadedResponse.url,
+            imageUrl: uploadedResponse.url,
             fileName: `${userId}-${userName}`,
         };
     }
     catch (error) {
-        console.error(error);
         throw new Error("[Cloudinary - Upload]: Failed to upload image");
     }
 }

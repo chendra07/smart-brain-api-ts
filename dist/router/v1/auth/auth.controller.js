@@ -12,47 +12,43 @@ const users_model_1 = require("../../../models/users.model");
 const cloudinary_model_1 = require("../../../models/cloudinary.model");
 async function httpPostRegister(req, res) {
     const { email, password, name, image64 } = req.body;
-    let tempFileUrl;
+    let tempImageUrl;
     let tempFileName;
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
         //insert to user table
-        const userData = await (0, users_model_1.createNewUser)(name, email, t);
+        const newUser = await (0, users_model_1.createOneUser)(name, email, t);
         //generate token
         const accessToken = (0, tokenJWT_1.signNewAccessToken)({
             email,
-            userid: userData.userid,
+            userid: newUser.userid,
         });
         //insert to login table
         await (0, login_model_1.createNewLogin)({
             email: email,
             hash: (0, bcryptPassword_1.hashPassword)(password),
-            userid: userData.userid,
+            userid: newUser.userid,
         }, t);
         //if user send image when register, upload the image
         if (image64) {
-            const { userid, name } = userData;
-            const { fileName, url } = await (0, cloudinary_model_1.uploadFileCloudinary)(image64, userid, name);
-            tempFileUrl = url;
+            const { userid, name } = newUser;
+            const { fileName, imageUrl } = await (0, cloudinary_model_1.uploadFileCloudinary)(image64, userid, name);
+            tempImageUrl = imageUrl;
             tempFileName = fileName;
         }
         //update image field
-        await (0, users_model_1.updateUserData)({ name: name, image: tempFileUrl }, email, userData.userid, t);
-        // req.session!.user = {
-        //   userid: userData.userid,
-        //   email: email,
-        // };
+        await (0, users_model_1.updateOneUser)({ name: name, image: tempImageUrl }, email, newUser.userid, t);
         return responses_1.responses.res201(req, res, {
-            userid: userData.userid,
+            userid: newUser.userid,
             email: email,
-            image: tempFileUrl,
+            image: tempImageUrl,
             name: name,
             token: accessToken,
         });
     })
         .catch(async (error) => {
         if (tempFileName) {
-            //if registration failed and image has been uploaded, delete the file
+            //if registration failed and image has been uploaded: delete the file
             await (0, cloudinary_model_1.deleteFileCloudinary)(tempFileName);
         }
         return responses_1.responses.res500(req, res, null, error.toString());
@@ -61,7 +57,7 @@ async function httpPostRegister(req, res) {
 exports.httpPostRegister = httpPostRegister;
 async function httpPostLogin(req, res) {
     const { email, password } = req.body;
-    const loginData = await (0, login_model_1.getOneLoginData)(email);
+    const loginData = await (0, login_model_1.getOneLogin)(email);
     //verify password
     if (!loginData || !(0, bcryptPassword_1.comparePassword)(password, loginData.hash)) {
         return responses_1.responses.res403(req, res, null, "your email or password are invalid");
@@ -69,10 +65,6 @@ async function httpPostLogin(req, res) {
     //get user data
     const userData = await (0, users_model_1.getOneUser)(loginData.userid, email).then((result) => {
         const { userid, email, name, image } = result;
-        // req.session!.user = {
-        //   userid,
-        //   email,
-        // };
         const accessToken = (0, tokenJWT_1.signNewAccessToken)({
             email,
             userid: userid,
@@ -88,20 +80,13 @@ async function httpPostLogin(req, res) {
     return responses_1.responses.res200(req, res, userData, "user login successfully");
 }
 exports.httpPostLogin = httpPostLogin;
-//just delete JWT from client side
-// export async function httpLogoutUser(req: Request, res: Response) {
-//   //delete user's session
-//   req.session = null;
-//   return responses.res200(req, res, null, "session deleted");
-// }
 async function httpDeleteUser(req, res) {
-    const { email, userid } = req.userData;
+    const { email, userid } = req.tokenBody;
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
         //performing soft delete actions in Logins & Users table:
-        await (0, login_model_1.updateLoginData)({ isdeleted: true }, email, userid, t);
-        await (0, users_model_1.updateUserData)({ isdeleted: true }, email, userid, t);
-        // req.session!.user = null;
+        await (0, login_model_1.updateOneLogin)({ isdeleted: true }, email, userid, t);
+        await (0, users_model_1.updateOneUser)({ isdeleted: true }, email, userid, t);
         return responses_1.responses.res200(req, res, null, "User deleted successfully");
     })
         .catch((error) => {
@@ -110,9 +95,9 @@ async function httpDeleteUser(req, res) {
 }
 exports.httpDeleteUser = httpDeleteUser;
 async function httpChangePassword(req, res) {
-    const { email, userid } = req.userData;
+    const { email, userid } = req.tokenBody;
     const { newPassword, oldPassword } = req.body;
-    const loginData = await (0, login_model_1.getOneLoginData)(email);
+    const loginData = await (0, login_model_1.getOneLogin)(email);
     //if old password did not match the database: reject request
     if (!(0, bcryptPassword_1.comparePassword)(oldPassword, loginData.hash)) {
         return responses_1.responses.res403(req, res, null, "Unable to update password");
@@ -121,7 +106,7 @@ async function httpChangePassword(req, res) {
     const hashNewPass = (0, bcryptPassword_1.hashPassword)(newPassword);
     postgresDB_1.sequelizeCfg
         .transaction(async (t) => {
-        await (0, login_model_1.updateLoginData)({ hash: hashNewPass }, email, userid, t);
+        await (0, login_model_1.updateOneLogin)({ hash: hashNewPass }, email, userid, t);
         return responses_1.responses.res200(req, res, null, "password successfully updated");
     })
         .catch((error) => {

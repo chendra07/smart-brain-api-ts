@@ -37,10 +37,10 @@ export async function verifyBody_UpdateUser(
   if (
     image64 &&
     !(await isBase64ImageValid(image64, 4000000, [
-      "webp",
-      "png",
-      "jpg",
-      "jpeg",
+      "image/webp",
+      "image/png",
+      "image/jpg",
+      "image/jpeg",
     ]))
   ) {
     return responses.res400(

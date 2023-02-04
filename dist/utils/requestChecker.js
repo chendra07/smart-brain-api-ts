@@ -1,20 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.checkStringOfNumber = exports.checkParsePositive = void 0;
-function checkParsePositive(target) {
+exports.isStringOfNumber = exports.isParsedPositive = void 0;
+function isParsedPositive(target) {
     const parsed = parseInt(target);
     if (Number.isNaN(parsed) || parsed < 0) {
         return false;
     }
     return true;
 }
-exports.checkParsePositive = checkParsePositive;
-function checkStringOfNumber(target) {
-    let valid = true;
+exports.isParsedPositive = isParsedPositive;
+function isStringOfNumber(target) {
     //only accept string like this: "1,2,3,4"
     if (!target.match(/^[0-9,]+$/)) {
-        valid = false;
+        return false;
     }
-    return valid;
+    return true;
 }
-exports.checkStringOfNumber = checkStringOfNumber;
+exports.isStringOfNumber = isStringOfNumber;

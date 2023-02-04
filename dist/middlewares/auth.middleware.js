@@ -21,12 +21,12 @@ function verifyToken(req, res, next) {
         return responses_1.responses.res401(req, res, null, "No token detected, please login or register first");
     }
     //verify the token
-    jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, userData) => {
+    jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, tokenBody) => {
         if (err) {
             return responses_1.responses.res403(req, res, null, "Token expire or invalid, try to refresh token or login");
         }
         //store decoded token body to userData
-        req.userData = userData;
+        req.tokenBody = tokenBody;
         next();
     });
 }
@@ -44,7 +44,7 @@ function verifyBody_Login(req, res, next) {
         return responses_1.responses.res400(req, res, null, `Invalid body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
     const { password } = req.body;
-    const verifyPass = (0, passwordValidator_1.passwordValidator)(password);
+    const verifyPass = (0, passwordValidator_1.isPasswordValid)(password);
     if (!verifyPass) {
         return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
     }
@@ -66,12 +66,18 @@ async function verifyBody_Register(req, res, next) {
         return responses_1.responses.res400(req, res, null, `Invalid register body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
     const { password, image64 } = req.body;
-    if (!(0, passwordValidator_1.passwordValidator)(password)) {
+    if (!(0, passwordValidator_1.isPasswordValid)(password)) {
         return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
     }
     //if base64 exists: check size & extension
     //if size or extension invalid: reject
-    if (image64 && !(await (0, base64Checker_1.base64ImgCheck)(image64))) {
+    if (image64 &&
+        !(await (0, base64Checker_1.isBase64ImageValid)(image64, 4000000, [
+            "image/png",
+            "image/jpeg",
+            "image/jpg",
+            "image/webp",
+        ]))) {
         return responses_1.responses.res400(req, res, null, "image64 extension must be png/jpg/jpeg and maximum size is 4 MB");
     }
     next();
@@ -88,7 +94,7 @@ function verifyBody_ChangePassword(req, res, next) {
         return responses_1.responses.res400(req, res, null, `Invalid Body (${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message})`);
     }
     const { newPassword, oldPassword } = req.body;
-    if (!(0, passwordValidator_1.passwordValidator)(newPassword) || !(0, passwordValidator_1.passwordValidator)(oldPassword)) {
+    if (!(0, passwordValidator_1.isPasswordValid)(newPassword) || !(0, passwordValidator_1.isPasswordValid)(oldPassword)) {
         return responses_1.responses.res400(req, res, null, "Password did not meet the security requirement");
     }
     next();

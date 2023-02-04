@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { fromZodError } from "zod-validation-error";
 import { responses } from "../utils/responses";
 import { isPasswordValid } from "../utils/passwordValidator";
-import { isBase64Image } from "../utils/base64Checker";
+import { isBase64ImageValid } from "../utils/base64Checker";
 
 dotenv.config();
 const { JWT_SECRET } = process.env;
@@ -130,7 +130,15 @@ export async function verifyBody_Register(
   //if base64 exists: check size & extension
   //if size or extension invalid: reject
 
-  if (image64 && !(await isBase64Image(image64))) {
+  if (
+    image64 &&
+    !(await isBase64ImageValid(image64, 4000000, [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+    ]))
+  ) {
     return responses.res400(
       req,
       res,

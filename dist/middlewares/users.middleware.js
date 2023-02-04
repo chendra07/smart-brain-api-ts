@@ -14,12 +14,16 @@ const zodBodyUpdateUser = zod_1.z.object({
 async function verifyBody_UpdateUser(req, res, next) {
     const verifyZod = zodBodyUpdateUser.safeParse(req.body);
     if (!verifyZod.success) {
-        console.log(req.body);
-        console.log(verifyZod.success);
         return responses_1.responses.res400(req, res, null, `invalid request ${(0, zod_validation_error_1.fromZodError)(verifyZod.error).message}`);
     }
     const { image64 } = req.body;
-    if (image64 && !(await (0, base64Checker_1.base64ImgCheck)(image64))) {
+    if (image64 &&
+        !(await (0, base64Checker_1.isBase64ImageValid)(image64, 4000000, [
+            "image/webp",
+            "image/png",
+            "image/jpg",
+            "image/jpeg",
+        ]))) {
         return responses_1.responses.res400(req, res, null, "image64 extension must be png/jpg/jpeg and maximum size is 4 MB");
     }
     next();

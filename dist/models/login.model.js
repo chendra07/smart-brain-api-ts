@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateLoginData = exports.getOneLoginData = exports.createNewLogin = exports.LoginTablePgModel = void 0;
+exports.updateOneLogin = exports.getOneLogin = exports.createNewLogin = exports.LoginPgModel = void 0;
 const sequelize_1 = require("sequelize");
 const postgresDB_1 = require("./postgresDB");
-exports.LoginTablePgModel = postgresDB_1.sequelizeCfg.define("login", {
+exports.LoginPgModel = postgresDB_1.sequelizeCfg.define("login", {
     loginid: {
         type: sequelize_1.DataTypes.INTEGER,
         primaryKey: true,
@@ -30,37 +30,37 @@ exports.LoginTablePgModel = postgresDB_1.sequelizeCfg.define("login", {
 }, {
     timestamps: false,
 });
-async function createNewLogin(data, t) {
-    return await exports.LoginTablePgModel.create(data, { transaction: t })
-        .then((data) => {
-        return data.dataValues;
+async function createNewLogin(newLoginInput, t) {
+    return await exports.LoginPgModel.create(newLoginInput, { transaction: t })
+        .then((newLogin) => {
+        return newLogin.dataValues;
     })
         .catch((error) => {
         throw new Error("[DB - Login]: Unable to create new login data, email must be unique");
     });
 }
 exports.createNewLogin = createNewLogin;
-async function getOneLoginData(email) {
-    return await exports.LoginTablePgModel.findOne({
+async function getOneLogin(email) {
+    return await exports.LoginPgModel.findOne({
         where: { email, isdeleted: false },
         raw: true,
-    }).then((data) => {
-        return data;
+    }).then((activeLoginFound) => {
+        return activeLoginFound;
     });
 }
-exports.getOneLoginData = getOneLoginData;
-async function updateLoginData(data, email, userid, t) {
-    return await exports.LoginTablePgModel.update(data, {
+exports.getOneLogin = getOneLogin;
+async function updateOneLogin(loginInput, email, userid, t) {
+    return await exports.LoginPgModel.update(loginInput, {
         where: { email, userid, isdeleted: false },
         transaction: t,
     })
-        .then((result) => {
-        return true;
+        .then((affectedLoginRows) => {
+        return affectedLoginRows;
     })
         .catch((error) => {
         console.error(error);
         throw new Error("[DB - Login]: unable to update login database, try again later");
     });
 }
-exports.updateLoginData = updateLoginData;
+exports.updateOneLogin = updateOneLogin;
 //=========================================================================================

@@ -9,7 +9,7 @@ const { JWT_SECRET } = process.env;
 function signNewAccessToken(data) {
     return jsonwebtoken_1.default.sign(data, JWT_SECRET, {
         algorithm: "HS256",
-        expiresIn: "20s",
+        expiresIn: "30m",
     });
 }
 exports.signNewAccessToken = signNewAccessToken;

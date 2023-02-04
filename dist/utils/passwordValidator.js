@@ -1,8 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.passwordValidator = void 0;
-function passwordValidator(password) {
-    let valid = true;
+exports.isPasswordValid = void 0;
+function isPasswordValid(password) {
     const regexCfgList = [
         "(?=.*[0-9])",
         "(?=.*[!@#$%^&*_])",
@@ -11,8 +10,8 @@ function passwordValidator(password) {
     ];
     const combinedRegex = regexCfgList.join("");
     if (!password.match(combinedRegex)) {
-        valid = false;
+        return false;
     }
-    return valid;
+    return true;
 }
-exports.passwordValidator = passwordValidator;
+exports.isPasswordValid = isPasswordValid;

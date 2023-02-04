@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserData = exports.createNewUser = exports.getOneUser = exports.UsersTablePgModel = void 0;
+exports.updateOneUser = exports.createOneUser = exports.getOneUser = exports.UsersPgModel = void 0;
 const sequelize_1 = require("sequelize");
 const postgresDB_1 = require("./postgresDB");
-exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
+exports.UsersPgModel = postgresDB_1.sequelizeCfg.define("users", {
     userid: {
         type: sequelize_1.DataTypes.INTEGER,
         allowNull: false,
@@ -35,44 +35,44 @@ exports.UsersTablePgModel = postgresDB_1.sequelizeCfg.define("users", {
     timestamps: false,
 });
 async function getOneUser(userid, email) {
-    return await exports.UsersTablePgModel.findOne({
+    return await exports.UsersPgModel.findOne({
         where: { userid, email, isdeleted: false },
         raw: true,
     })
-        .then((result) => {
-        return result;
+        .then((activeUserFound) => {
+        return activeUserFound;
     })
         .catch((error) => {
         throw new Error("[DB - usersTable]: " + error);
     });
 }
 exports.getOneUser = getOneUser;
-async function createNewUser(name, email, t) {
-    return await exports.UsersTablePgModel.create({
+async function createOneUser(name, email, t) {
+    return await exports.UsersPgModel.create({
         name: name,
         email: email,
         joined: new Date(),
     }, { transaction: t })
-        .then((data) => {
-        return data.dataValues;
+        .then((newUser) => {
+        return newUser.dataValues;
     })
         .catch((error) => {
         console.error(error);
         throw new Error("[DB - Login]: unable to insert your data");
     });
 }
-exports.createNewUser = createNewUser;
-async function updateUserData(data, email, userid, t) {
-    return await exports.UsersTablePgModel.update(data, {
+exports.createOneUser = createOneUser;
+async function updateOneUser(data, email, userid, t) {
+    return await exports.UsersPgModel.update(data, {
         where: { email, userid, isdeleted: false },
         transaction: t,
     })
-        .then((result) => {
-        return true;
+        .then((affectedUsersRows) => {
+        return affectedUsersRows;
     })
         .catch((error) => {
         console.error(error);
         throw new Error("[DB - Users]: unable to update user data, try again later");
     });
 }
-exports.updateUserData = updateUserData;
+exports.updateOneUser = updateOneUser;
