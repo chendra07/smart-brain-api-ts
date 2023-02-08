@@ -43,7 +43,7 @@ function axiosPromise(axiosConfig) {
         })
             .catch((error) => {
             console.error(error);
-            return reject(`(${axiosConfig.method.toUpperCase()}): ${error}`);
+            return reject(`(${axiosConfig.method.toUpperCase()}) ${error}`);
         });
     });
 }

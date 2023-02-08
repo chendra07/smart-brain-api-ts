@@ -75,7 +75,7 @@ export async function detectFaceAI(req: Request, res: Response) {
         req,
         res,
         null,
-        `[DB - history / Request Error] unable to process image, Note: ${error}`
+        `[DB - history / Request Error] unable to process image`
       );
     });
 }

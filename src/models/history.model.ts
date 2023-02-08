@@ -72,6 +72,7 @@ export async function findAllUserHistory(
     where: { userid, isdeleted: false },
     offset: skip * limit,
     limit: limit,
+    order: [["date", "DESC"]],
     raw: true,
   }).then((userActiveHistories) => {
     return {

@@ -43,7 +43,7 @@ async function detectFaceAI(req, res) {
         return responses_1.responses.res200(req, res, imageResult);
     })
         .catch((error) => {
-        return responses_1.responses.res500(req, res, null, `[DB - history / Request Error] unable to process image, Note: ${error}`);
+        return responses_1.responses.res500(req, res, null, `[DB - history / Request Error] unable to process image`);
     });
 }
 exports.detectFaceAI = detectFaceAI;

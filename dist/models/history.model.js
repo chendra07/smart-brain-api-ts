@@ -46,6 +46,7 @@ async function findAllUserHistory(userid, skip, limit) {
         where: { userid, isdeleted: false },
         offset: skip * limit,
         limit: limit,
+        order: [["date", "DESC"]],
         raw: true,
     }).then((userActiveHistories) => {
         return {
